@@ -1,16 +1,19 @@
 // src/styles/componentStyles.ts
 import type { ComponentType } from "../types";
 
-const componentStyles: Record<ComponentType, {
-  container: string;
-  element: string;
-  overlay?: string;
-  elementWrapper?: string;
-}> = {
+const componentStyles: Record<
+  ComponentType,
+  {
+    container: string;
+    element: string;
+    overlay?: string;
+    elementWrapper?: string;
+  }
+> = {
   button: {
     container: "cursor-grab",
     // Include both a background-color and appearance reset
-    element: "px-3 py-1 bg-blue-500 text-white appearance-none",
+    element: "",
     overlay: "shadow opacity-75",
   },
   card: {
