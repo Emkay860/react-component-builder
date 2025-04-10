@@ -1,11 +1,16 @@
-'use client'
+// Canvas.tsx
+"use client";
 import { useDroppable } from "@dnd-kit/core";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 
-type Props = { items: DroppedItem[] };
+type Props = {
+  items: DroppedItem[];
+  onSelect: (id: string) => void;
+  selectedId: string | null;
+};
 
-export default function Canvas({ items }: Props) {
+export default function Canvas({ items, onSelect, selectedId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
 
   return (
@@ -17,7 +22,12 @@ export default function Canvas({ items }: Props) {
       }`}
     >
       {items.map((item) => (
-        <CanvasItem key={item.id} item={item} />
+        <CanvasItem
+          key={item.id}
+          item={item}
+          onSelect={onSelect}
+          isSelected={item.id === selectedId}
+        />
       ))}
       {items.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-gray-500">
