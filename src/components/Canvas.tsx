@@ -6,12 +6,21 @@ import CanvasItem from "./CanvasItem";
 
 type Props = {
   items: DroppedItem[];
-  onSelect: (id: string) => void;
+  // Allow onSelect to accept a string or null.
+  onSelect: (id: string | null) => void;
   selectedId: string | null;
 };
 
 export default function Canvas({ items, onSelect, selectedId }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
+
+  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // If the click target is the canvas container itself
+    // and CTRL is not held down, clear the selection.
+    if (e.currentTarget === e.target && !e.ctrlKey) {
+      onSelect(null);
+    }
+  };
 
   return (
     <div
@@ -20,6 +29,7 @@ export default function Canvas({ items, onSelect, selectedId }: Props) {
       className={`relative flex-1 m-4 border-2 rounded-lg ${
         isOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"
       }`}
+      onClick={handleCanvasClick}
     >
       {items.map((item) => (
         <CanvasItem
