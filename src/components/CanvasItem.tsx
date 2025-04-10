@@ -104,7 +104,7 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         const dynamicStyle = getDynamicStyle(item);
         return (
           <div className={elementClasses} style={dynamicStyle}>
-            Card Component
+            {item.label === undefined ? "Card Component" : item.label}
           </div>
         );
       }
