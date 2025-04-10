@@ -11,4 +11,9 @@ export interface CanvasElement {
   }
   
   
-export type DroppedItem = { id: string; x: number; y: number }
+  export interface DroppedItem {
+    id: string;
+    x: number;
+    y: number;
+    zIndex?: number;
+  }
