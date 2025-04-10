@@ -55,9 +55,11 @@ export default function PropertyPanel({
         <label className="block text-sm font-medium">Y Position</label>
         <input
           type="number"
-          value={selectedItem.y}
+          // Display the inverted state value
+          value={-selectedItem.y}
+          // When updating, store the negative of the input value
           onChange={(e) =>
-            updateItem(selectedItem.id, { y: Number(e.target.value) })
+            updateItem(selectedItem.id, { y: -Number(e.target.value) })
           }
           className="mt-1 block w-full border border-gray-300 rounded p-2"
         />
