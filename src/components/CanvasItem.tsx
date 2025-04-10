@@ -63,34 +63,27 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         return {
           backgroundColor: item.bgColor,
           color: item.textColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          borderRadius: item.borderRadius !== undefined ? `${item.borderRadius}px` : undefined,
+          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       case "card":
         return {
           backgroundColor: item.bgColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          borderRadius: item.borderRadius !== undefined ? `${item.borderRadius}px` : undefined,
+          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          // Apply width and height if provided; otherwise fallback to auto.
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
         };
       case "text":
         return {
           color: item.textColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       case "input":
         return {
           borderColor: item.borderColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       default:
         return {};
@@ -111,7 +104,7 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         const dynamicStyle = getDynamicStyle(item);
         return (
           <div className={elementClasses} style={dynamicStyle}>
-            {item.label || "Card Component"}
+            Card Component
           </div>
         );
       }

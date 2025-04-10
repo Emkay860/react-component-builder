@@ -1,3 +1,4 @@
+// types.ts
 export type ComponentType = "button" | "card" | "text" | "input";
 
 export interface DroppedItem {
@@ -13,4 +14,7 @@ export interface DroppedItem {
   borderRadius?: number;
   fontSize?: number;
   borderColor?: string; // For input, for example
+  // New properties for a generic div/card:
+  width?: number; // e.g. in pixels
+  height?: number; // e.g. in pixels
 }

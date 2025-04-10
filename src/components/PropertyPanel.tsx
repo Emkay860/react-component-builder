@@ -50,8 +50,7 @@ export default function PropertyPanel({
           <label className="block text-sm font-medium">Y Position</label>
           <input
             type="number"
-            // Invert the Y value so that reducing the input value moves the element up.
-            value={-selectedItem.y}
+            value={-selectedItem.y} // Inverting, as before
             onChange={(e) =>
               updateItem(selectedItem.id, { y: -Number(e.target.value) })
             }

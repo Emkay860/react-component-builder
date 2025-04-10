@@ -3,7 +3,7 @@ import type { ComponentType, DroppedItem } from "../types";
 
 export type PropertyField = {
   label: string;
-  property: keyof DroppedItem; // a key on DroppedItem
+  property: keyof DroppedItem; // key on DroppedItem that will update the value
   type: "text" | "number" | "color" | "boolean";
 };
 
@@ -27,6 +27,9 @@ export const componentProperties: Partial<
     { label: "Background Color", property: "bgColor", type: "color" },
     { label: "Border Radius", property: "borderRadius", type: "number" },
     { label: "Font Size", property: "fontSize", type: "number" },
+    // New controls to update the size of the card:
+    { label: "Width", property: "width", type: "number" },
+    { label: "Height", property: "height", type: "number" },
   ],
   input: [
     { label: "Placeholder", property: "label", type: "text" },
