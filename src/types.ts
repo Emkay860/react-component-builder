@@ -1,4 +1,3 @@
-// types.ts
 export type ComponentType = "button" | "card" | "text" | "input";
 
 export interface DroppedItem {
@@ -8,9 +7,10 @@ export interface DroppedItem {
   zIndex?: number;
   componentType: ComponentType;
   label?: string;
-  // Additional properties for buttons (and you can extend to other types)
-  bgColor?: string; // E.g. Background color of the button
-  textColor?: string; // E.g. Text color
-  borderRadius?: number; // E.g. Border radius in pixels
-  fontSize?: number; // E.g. Font size in pixels
+  // Extra editable properties (for button, card, text, input, etc.)
+  bgColor?: string;
+  textColor?: string;
+  borderRadius?: number;
+  fontSize?: number;
+  borderColor?: string; // For input, for example
 }

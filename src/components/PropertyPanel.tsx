@@ -24,7 +24,7 @@ export default function PropertyPanel({
     );
   }
 
-  // Get component-specific definitions from config
+  // Get component-specific property definitions from our config.
   const specificDefinitions: PropertyField[] =
     componentProperties[selectedItem.componentType] || [];
 
@@ -32,7 +32,7 @@ export default function PropertyPanel({
     <div className="w-64 p-4 border-l">
       <h2 className="text-lg font-bold mb-4">Properties</h2>
 
-      {/* General properties, common to all elements */}
+      {/* General properties common to all elements */}
       <div className="mb-4">
         <h3 className="text-md font-semibold mb-2">General</h3>
         <div className="mb-4">
@@ -50,7 +50,8 @@ export default function PropertyPanel({
           <label className="block text-sm font-medium">Y Position</label>
           <input
             type="number"
-            value={-selectedItem.y} // showing inverted value as before
+            // Invert the Y value so that reducing the input value moves the element up.
+            value={-selectedItem.y}
             onChange={(e) =>
               updateItem(selectedItem.id, { y: -Number(e.target.value) })
             }
@@ -59,7 +60,7 @@ export default function PropertyPanel({
         </div>
       </div>
 
-      {/* Component-specific properties */}
+      {/* Component-Specific properties */}
       {specificDefinitions.length > 0 && (
         <div className="mb-4">
           <h3 className="text-md font-semibold mb-2">Component Specific</h3>

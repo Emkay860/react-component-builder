@@ -26,8 +26,6 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
     if (!innerEl) return;
 
     const handlePointerDown = () => {
-      // You can choose here whether you want to use different logic for inputs.
-      // In this example, we fire onSelect for all elements.
       if (!isDragging && onSelect) {
         onSelect(item.id);
       }
@@ -58,12 +56,12 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
   const containerClasses = styleConfig.container || "cursor-grab";
   const elementClasses = styleConfig.element || "";
 
-  const renderContent = () => {
+  // Helper: Generate a dynamic inline style based on the item's properties.
+  const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {
     switch (item.componentType) {
-      case "button": {
-        // Create a style object using updated properties from the item.
-        const buttonStyle: React.CSSProperties = {
-          backgroundColor: item.bgColor, // comes from updated state
+      case "button":
+        return {
+          backgroundColor: item.bgColor,
           color: item.textColor,
           borderRadius:
             item.borderRadius !== undefined
@@ -72,25 +70,68 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
           fontSize:
             item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
+      case "card":
+        return {
+          backgroundColor: item.bgColor,
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+        };
+      case "text":
+        return {
+          color: item.textColor,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+        };
+      case "input":
+        return {
+          borderColor: item.borderColor,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+        };
+      default:
+        return {};
+    }
+  };
+
+  const renderContent = () => {
+    switch (item.componentType) {
+      case "button": {
+        const dynamicStyle = getDynamicStyle(item);
         return (
-          <button className={elementClasses} style={buttonStyle}>
+          <button className={elementClasses} style={dynamicStyle}>
             {item.label || "Button"}
           </button>
         );
       }
-      case "card":
-        return <div className={elementClasses}>Card Component</div>;
-      case "text":
-        return <p className={elementClasses}>{item.label || "Text Element"}</p>;
+      case "card": {
+        const dynamicStyle = getDynamicStyle(item);
+        return (
+          <div className={elementClasses} style={dynamicStyle}>
+            {item.label || "Card Component"}
+          </div>
+        );
+      }
+      case "text": {
+        const dynamicStyle = getDynamicStyle(item);
+        return (
+          <p className={elementClasses} style={dynamicStyle}>
+            {item.label || "Text Element"}
+          </p>
+        );
+      }
       case "input": {
         const wrapperClasses = styleConfig.elementWrapper || "";
+        // For input, we stop propagation so that native editing works.
         return (
           <div className={wrapperClasses}>
             <input
               placeholder="Input Value"
               className={elementClasses}
-              // For inputs, we still want to stop propagation for pointer events
-              // so that editing works smoothly.
+              style={getDynamicStyle(item)}
               onPointerDown={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
             />
@@ -101,7 +142,6 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         return <div>Unknown Component</div>;
     }
   };
-  
 
   return (
     <div
