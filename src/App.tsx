@@ -1,23 +1,33 @@
 'use client'
-import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core'
-import { useState } from 'react'
-import Canvas from './components/Canvas'
-import Sidebar from './components/Sidebar'
-import { DroppedItem } from './types'
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import { useState } from "react";
+import Canvas from "./components/Canvas";
+import Sidebar from "./components/Sidebar";
+import { DroppedItem } from "./types";
 
 export default function App() {
-  const [items, setItems] = useState<DroppedItem[]>([])
-  const [startCoordinates, setStartCoordinates] = useState<{ x: number; y: number } | null>(null)
+  const [items, setItems] = useState<DroppedItem[]>([]);
+  const [startCoordinates, setStartCoordinates] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
-    // Check if the dragged item exists on the canvas (i.e. it’s being repositioned)
+    setActiveId(String(event.active.id)); // Convert UniqueIdentifier to string (Track which item is dragging)
+
+    // Check if this drag is from an already placed button on the canvas
     const existingItem = items.find((item) => item.id === event.active.id);
     if (existingItem) {
-      // For canvas item's reposition, use its stored coordinates.
       setStartCoordinates({ x: existingItem.x, y: existingItem.y });
 
-      // Optional: update z-index to bring it to the top layer.
+      // Bring the dragging item to the front by updating its z-index.
       setItems((prev) =>
         prev.map((item) =>
           item.id === event.active.id
@@ -29,13 +39,14 @@ export default function App() {
         )
       );
     } else {
-      // For a new drop from the Sidebar, record the pointer's coordinates.
+      // For a new drop from the Sidebar, record the pointer's start position.
       setStartCoordinates({ x: mouseEvent.clientX, y: mouseEvent.clientY });
     }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over, delta } = event;
+    setActiveId(null); // Clear the ghost overlay once drop is complete
     if (!startCoordinates) return;
     if (over?.id !== "canvas") return;
 
@@ -46,7 +57,6 @@ export default function App() {
     const isExistingItem = items.some((item) => item.id === active.id);
 
     if (isExistingItem) {
-      // For repositioned items, update position by adding the pointer delta.
       const finalX = startCoordinates.x + delta.x;
       const finalY = startCoordinates.y + delta.y;
       setItems((prev) =>
@@ -55,7 +65,6 @@ export default function App() {
         )
       );
     } else if (active.id === "button") {
-      // For a new element, transform from window to canvas coordinates.
       const finalX = startCoordinates.x + delta.x - canvasRect.left;
       const finalY = startCoordinates.y + delta.y - canvasRect.top;
       const newItem: DroppedItem = {
@@ -68,7 +77,7 @@ export default function App() {
     }
 
     setStartCoordinates(null);
-  }
+  };
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -76,6 +85,15 @@ export default function App() {
         <Sidebar />
         <Canvas items={items} />
       </div>
+
+      {/* DragOverlay will render the ghost element while dragging */}
+      <DragOverlay>
+        {activeId === "button" && (
+          <div className="px-3 py-3 bg-gray-600 text-white rounded shadow opacity-75">
+            Button
+          </div>
+        )}
+      </DragOverlay>
     </DndContext>
-  )
+  );
 }
