@@ -1,6 +1,7 @@
 // CanvasItem.tsx
 "use client";
 import { useDraggable } from "@dnd-kit/core";
+import { useEffect, useRef } from "react";
 import componentStyles from "../styles/componentStyles";
 import { DroppedItem } from "../types";
 
@@ -15,6 +16,32 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
     useDraggable({
       id: item.id,
     });
+
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  // Attach a native pointerdown listener to guarantee selection events fire,
+  // regardless of how dnd-kit’s synthetic events behave.
+  useEffect(() => {
+    const innerEl = innerRef.current;
+    if (!innerEl) return;
+
+    const handlePointerDown = () => {
+      // You can choose here whether you want to use different logic for inputs.
+      // In this example, we fire onSelect for all elements.
+      if (!isDragging && onSelect) {
+        onSelect(item.id);
+      }
+    };
+
+    innerEl.addEventListener("pointerdown", handlePointerDown, {
+      capture: true,
+    });
+    return () => {
+      innerEl.removeEventListener("pointerdown", handlePointerDown, {
+        capture: true,
+      });
+    };
+  }, [isDragging, onSelect, item.id]);
 
   const baseStyle = {
     position: "absolute" as const,
@@ -48,6 +75,8 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
             <input
               placeholder="Input Value"
               className={elementClasses}
+              // For inputs, we still want to stop propagation for pointer events
+              // so that editing works smoothly.
               onPointerDown={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
             />
@@ -68,11 +97,12 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
       className={`${containerClasses} ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
-      onClick={() => {
-        if (onSelect) onSelect(item.id);
-      }}
     >
-      {renderContent()}
+      {/* 
+        innerRef is attached to this wrapper so that our native pointerdown listener
+        fires in capture mode.
+      */}
+      <div ref={innerRef}>{renderContent()}</div>
     </div>
   );
 }
