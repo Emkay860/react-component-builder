@@ -60,10 +60,24 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
 
   const renderContent = () => {
     switch (item.componentType) {
-      case "button":
+      case "button": {
+        // Create a style object using updated properties from the item.
+        const buttonStyle: React.CSSProperties = {
+          backgroundColor: item.bgColor, // comes from updated state
+          color: item.textColor,
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+        };
         return (
-          <button className={elementClasses}>{item.label || "Button"}</button>
+          <button className={elementClasses} style={buttonStyle}>
+            {item.label || "Button"}
+          </button>
         );
+      }
       case "card":
         return <div className={elementClasses}>Card Component</div>;
       case "text":
@@ -87,6 +101,7 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         return <div>Unknown Component</div>;
     }
   };
+  
 
   return (
     <div

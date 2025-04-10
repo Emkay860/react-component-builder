@@ -24,7 +24,7 @@ export default function PropertyPanel({
     );
   }
 
-  // Get the component-specific property definitions
+  // Get component-specific definitions from config
   const specificDefinitions: PropertyField[] =
     componentProperties[selectedItem.componentType] || [];
 
@@ -32,7 +32,7 @@ export default function PropertyPanel({
     <div className="w-64 p-4 border-l">
       <h2 className="text-lg font-bold mb-4">Properties</h2>
 
-      {/* General Properties */}
+      {/* General properties, common to all elements */}
       <div className="mb-4">
         <h3 className="text-md font-semibold mb-2">General</h3>
         <div className="mb-4">
@@ -50,18 +50,16 @@ export default function PropertyPanel({
           <label className="block text-sm font-medium">Y Position</label>
           <input
             type="number"
-            // Invert the value for more intuitive control.
-            value={-selectedItem.y}
+            value={-selectedItem.y} // showing inverted value as before
             onChange={(e) =>
               updateItem(selectedItem.id, { y: -Number(e.target.value) })
             }
             className="mt-1 block w-full border border-gray-300 rounded p-2"
           />
         </div>
-        {/* You can add more general properties (e.g. zIndex) here */}
       </div>
 
-      {/* Component-Specific Properties */}
+      {/* Component-specific properties */}
       {specificDefinitions.length > 0 && (
         <div className="mb-4">
           <h3 className="text-md font-semibold mb-2">Component Specific</h3>
@@ -104,7 +102,18 @@ export default function PropertyPanel({
                   className="mt-1 block w-full border border-gray-300 rounded p-2"
                 />
               )}
-              {/* You can add other input types such as boolean (checkbox) if needed */}
+              {field.type === "boolean" && (
+                <input
+                  type="checkbox"
+                  checked={Boolean(selectedItem[field.property])}
+                  onChange={(e) =>
+                    updateItem(selectedItem.id, {
+                      [field.property]: e.target.checked,
+                    } as Partial<DroppedItem>)
+                  }
+                  className="mt-1"
+                />
+              )}
             </div>
           ))}
         </div>
