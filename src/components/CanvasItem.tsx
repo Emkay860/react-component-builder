@@ -1,6 +1,7 @@
 'use client'
 import { useDraggable } from '@dnd-kit/core';
-import { DroppedItem } from '../types';
+import componentStyles from "../styles/componentStyles";
+import { DroppedItem } from "../types";
 
 type Props = { item: DroppedItem };
 
@@ -10,7 +11,7 @@ export default function CanvasItem({ item }: Props) {
       id: item.id,
     });
 
-  const style = {
+  const baseStyle = {
     position: "absolute" as const,
     top: item.y,
     left: item.x,
@@ -21,40 +22,45 @@ export default function CanvasItem({ item }: Props) {
     cursor: isDragging ? "grabbing" : "grab",
   };
 
+  const styleConfig = componentStyles[item.componentType] || {};
+
+  const containerClasses = styleConfig.container || "cursor-grab";
+  const elementClasses = styleConfig.element || "";
+
   const renderContent = () => {
     switch (item.componentType) {
       case "button":
-        return (
-          <button className="px-3 py-1 bg-blue-500 text-white rounded">
-            Button
-          </button>
-        );
+        return <button className={elementClasses}>Button</button>;
       case "card":
-        return (
-          <div className="p-4 bg-white border rounded shadow">
-            Card Component
-          </div>
-        );
+        return <div className={elementClasses}>Card Component</div>;
       case "text":
-        return <p className="p-2 text-gray-800">Text Element</p>;
-      case "input":
+        return <p className={elementClasses}>Text Element</p>;
+      case "input": {
+        const wrapperClasses = styleConfig.elementWrapper || "";
         return (
-          <div className="p-1 hover:border hover:border-dashed hover:border-red-500">
+          <div className={wrapperClasses}>
             <input
               placeholder="Input Value"
-              className="border rounded p-1 text-black"
+              className={elementClasses}
               onPointerDown={(e) => e.stopPropagation()}
               onFocus={(e) => e.stopPropagation()}
             />
           </div>
         );
+      }
       default:
         return <div>Unknown Component</div>;
     }
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={baseStyle}
+      {...attributes}
+      {...listeners}
+      className={containerClasses}
+    >
       {renderContent()}
     </div>
   );

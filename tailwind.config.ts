@@ -1,14 +1,21 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: {
+    files: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+    safelist: [
+      "px-3",
+      "py-1",
+      "bg-blue-500",
+      "text-white",
+      "appearance-none",
+      // any additional classes
+    ],
+  } as unknown as { files: string[]; safelist: string[] },
   theme: {
     extend: {},
   },
   plugins: [],
-}
+};
 
-export default config
+export default config;

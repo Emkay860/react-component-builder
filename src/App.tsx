@@ -7,6 +7,7 @@ import {
 } from "@dnd-kit/core";
 import { useState } from "react";
 import Canvas from "./components/Canvas";
+import GhostOverlay from "./components/GhostOverlay"; // Import your ghost component
 import Sidebar from "./components/Sidebar";
 import { DroppedItem } from "./types";
 
@@ -90,40 +91,7 @@ export default function App() {
 
       {/* DragOverlay renders a ghost preview while dragging */}
       <DragOverlay>
-        {activeId &&
-          activeType &&
-          (() => {
-            switch (activeType) {
-              case "button":
-                return (
-                  <div className="px-3 py-1 bg-blue-500 text-white rounded shadow opacity-75">
-                    Button
-                  </div>
-                );
-              case "card":
-                return (
-                  <div className="p-4 bg-white border rounded shadow opacity-75">
-                    Card Preview
-                  </div>
-                );
-              case "text":
-                return (
-                  <div className="p-2 text-gray-800 opacity-75">
-                    Text Preview
-                  </div>
-                );
-              case "input":
-                return (
-                  <input
-                    placeholder="Input"
-                    className="border rounded p-1 opacity-75"
-                    readOnly
-                  />
-                );
-              default:
-                return <div className="opacity-75">Unknown</div>;
-            }
-          })()}
+        {activeId && activeType && <GhostOverlay activeType={activeType} />}
       </DragOverlay>
     </DndContext>
   );

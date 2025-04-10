@@ -11,11 +11,12 @@ export interface CanvasElement {
   }
   
   
+  export type ComponentType = "button" | "card" | "text" | "input";
+
   export interface DroppedItem {
     id: string;
     x: number;
     y: number;
     zIndex?: number;
-    componentType: string; // e.g., "button", "card", "text", "input"
+    componentType: ComponentType;
   }
-  
