@@ -1,5 +1,9 @@
 // PropertyPanel.tsx
 "use client";
+import {
+  componentProperties,
+  PropertyField,
+} from "../config/componentProperties";
 import { DroppedItem } from "../types";
 
 type PropertyPanelProps = {
@@ -20,50 +24,91 @@ export default function PropertyPanel({
     );
   }
 
+  // Get the component-specific property definitions
+  const specificDefinitions: PropertyField[] =
+    componentProperties[selectedItem.componentType] || [];
+
   return (
     <div className="w-64 p-4 border-l">
       <h2 className="text-lg font-bold mb-4">Properties</h2>
 
-      {(selectedItem.componentType === "button" ||
-        selectedItem.componentType === "text") && (
+      {/* General Properties */}
+      <div className="mb-4">
+        <h3 className="text-md font-semibold mb-2">General</h3>
         <div className="mb-4">
-          <label className="block text-sm font-medium">Text</label>
+          <label className="block text-sm font-medium">X Position</label>
           <input
-            type="text"
-            value={selectedItem.label || ""}
+            type="number"
+            value={selectedItem.x}
             onChange={(e) =>
-              updateItem(selectedItem.id, { label: e.target.value })
+              updateItem(selectedItem.id, { x: Number(e.target.value) })
             }
             className="mt-1 block w-full border border-gray-300 rounded p-2"
           />
         </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium">Y Position</label>
+          <input
+            type="number"
+            // Invert the value for more intuitive control.
+            value={-selectedItem.y}
+            onChange={(e) =>
+              updateItem(selectedItem.id, { y: -Number(e.target.value) })
+            }
+            className="mt-1 block w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+        {/* You can add more general properties (e.g. zIndex) here */}
+      </div>
+
+      {/* Component-Specific Properties */}
+      {specificDefinitions.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-md font-semibold mb-2">Component Specific</h3>
+          {specificDefinitions.map((field) => (
+            <div key={field.property as string} className="mb-4">
+              <label className="block text-sm font-medium">{field.label}</label>
+              {field.type === "text" && (
+                <input
+                  type="text"
+                  value={(selectedItem[field.property] as string) || ""}
+                  onChange={(e) =>
+                    updateItem(selectedItem.id, {
+                      [field.property]: e.target.value,
+                    } as Partial<DroppedItem>)
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded p-2"
+                />
+              )}
+              {field.type === "number" && (
+                <input
+                  type="number"
+                  value={Number(selectedItem[field.property]) || 0}
+                  onChange={(e) =>
+                    updateItem(selectedItem.id, {
+                      [field.property]: Number(e.target.value),
+                    } as Partial<DroppedItem>)
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded p-2"
+                />
+              )}
+              {field.type === "color" && (
+                <input
+                  type="color"
+                  value={(selectedItem[field.property] as string) || "#000000"}
+                  onChange={(e) =>
+                    updateItem(selectedItem.id, {
+                      [field.property]: e.target.value,
+                    } as Partial<DroppedItem>)
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded p-2"
+                />
+              )}
+              {/* You can add other input types such as boolean (checkbox) if needed */}
+            </div>
+          ))}
+        </div>
       )}
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium">X Position</label>
-        <input
-          type="number"
-          value={selectedItem.x}
-          onChange={(e) =>
-            updateItem(selectedItem.id, { x: Number(e.target.value) })
-          }
-          className="mt-1 block w-full border border-gray-300 rounded p-2"
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium">Y Position</label>
-        <input
-          type="number"
-          // Display the inverted state value
-          value={-selectedItem.y}
-          // When updating, store the negative of the input value
-          onChange={(e) =>
-            updateItem(selectedItem.id, { y: -Number(e.target.value) })
-          }
-          className="mt-1 block w-full border border-gray-300 rounded p-2"
-        />
-      </div>
     </div>
   );
 }
