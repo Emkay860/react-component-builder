@@ -1,9 +1,9 @@
 'use client'
-import { useDroppable } from '@dnd-kit/core'
-import { DroppedItem } from '../types'
+import { useDroppable } from "@dnd-kit/core";
+import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 
-type Props = { items: DroppedItem[] }
+type Props = { items: DroppedItem[] };
 
 export default function Canvas({ items }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });

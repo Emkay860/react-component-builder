@@ -16,4 +16,6 @@ export interface CanvasElement {
     x: number;
     y: number;
     zIndex?: number;
+    componentType: string; // e.g., "button", "card", "text", "input"
   }
+  
