@@ -1,14 +1,16 @@
 // src/styles/componentStyles.ts
 import type { ComponentType } from "../types";
 
-const componentStyles: Record<
-  ComponentType,
-  {
-    container: string;
-    element: string;
-    overlay?: string;
-    elementWrapper?: string;
-  }
+const componentStyles: Partial<
+  Record<
+    ComponentType,
+    {
+      container: string;
+      element: string;
+      overlay?: string;
+      elementWrapper?: string;
+    }
+  >
 > = {
   button: {
     container: "cursor-grab",
