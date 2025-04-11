@@ -56,7 +56,6 @@ export default function App() {
     const canvasRect = canvas.getBoundingClientRect();
     const isExistingItem = items.some((item) => item.id === String(active.id));
 
-    // Only set parentId if the drop target isn't "canvas" or the active item itself
     const parentId =
       over && over.id !== "canvas" && over.id !== String(active.id)
         ? String(over.id)
@@ -102,6 +101,14 @@ export default function App() {
     );
   };
 
+  // New deletion callback that removes an item from state.
+  const handleDelete = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    if (selectedId === id) {
+      setSelectedId(null);
+    }
+  };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex p-4 bg-gray-100 space-x-4">
@@ -122,10 +129,12 @@ export default function App() {
       {currentPage === "editor" && (
         <div className="flex h-screen w-screen">
           <Sidebar />
+          {/* Pass the new onDelete callback into Canvas */}
           <Canvas
             items={items}
             onSelect={setSelectedId}
             selectedId={selectedId}
+            onDelete={handleDelete}
           />
           <PropertyPanel
             selectedItem={items.find((item) => item.id === selectedId)}

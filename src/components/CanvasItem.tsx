@@ -9,9 +9,15 @@ type Props = {
   item: DroppedItem;
   onSelect?: (id: string) => void;
   isSelected?: boolean;
+  onContextMenu?: (e: React.MouseEvent, id: string) => void;
 };
 
-export default function CanvasItem({ item, onSelect, isSelected }: Props) {
+export default function CanvasItem({
+  item,
+  onSelect,
+  isSelected,
+  onContextMenu,
+}: Props) {
   // useDraggable for all items.
   const {
     attributes,
@@ -24,8 +30,6 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
   });
 
   // useDroppable for the item.
-  // For non-container items, this dropRef may not be used,
-  // but for container items we will attach it to an overlay.
   const { setNodeRef: droppableRef } = useDroppable({ id: item.id });
 
   const innerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +66,16 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
     cursor: isDragging ? "grabbing" : "grab",
   };
 
-  const styleConfig = componentStyles[item.componentType] || {};
+  // Cast the fallback value so that these properties exist in the type.
+  const styleConfig =
+    componentStyles[item.componentType] ||
+    ({} as {
+      container?: string;
+      element?: string;
+      overlay?: string;
+      elementWrapper?: string;
+    });
+
   const containerClasses = styleConfig.container || "cursor-grab";
   const elementClasses = styleConfig.element || "";
 
@@ -163,6 +176,10 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
       className={`${containerClasses} ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        if (onContextMenu) onContextMenu(e, item.id);
+      }}
     >
       {/* Main content */}
       <div ref={innerRef}>{renderContent()}</div>
@@ -177,8 +194,7 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
             left: 0,
             width: "100%",
             height: "100%",
-            // Optionally, add a transparent background color for debugging:
-            // backgroundColor: "rgba(0,0,0,0.1)",
+            // Optionally add a transparent debug background, e.g. backgroundColor: "rgba(0,0,0,0.1)"
           }}
         />
       )}
