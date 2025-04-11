@@ -15,7 +15,7 @@ const componentStyles: Partial<
   button: {
     container: "cursor-grab",
     // Include both a background-color and appearance reset
-    element: "",
+    element: "text-white",
     overlay: "shadow opacity-75",
   },
   card: {
