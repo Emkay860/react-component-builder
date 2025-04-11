@@ -1,15 +1,15 @@
 // components/GeneratedComponent.tsx
 "use client";
-import React, { JSX } from "react";
+import React from "react";
 import type { DroppedItem } from "../types";
 import { generateComponentCode } from "../utils/generateComponentCode";
+import { DroppedItemRenderer } from "./DroppedItemRenderer";
 
 interface GeneratedComponentProps {
   items?: DroppedItem[];
 }
 
-// Sample items with a nested structure:
-// The card is located at (100, 100) and the button is a child of the card.
+// Sample items with a nested structure.
 const sampleItems: DroppedItem[] = [
   {
     id: "sample-card-1",
@@ -58,7 +58,7 @@ const sampleItems: DroppedItem[] = [
 const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
   items = sampleItems,
 }) => {
-  // Build a map of children keyed by parentId.
+  // Build a map for children keyed by parentId.
   const containerMap: Record<string, DroppedItem[]> = {};
   items.forEach((item) => {
     if (item.parentId) {
@@ -66,105 +66,10 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
       containerMap[item.parentId].push(item);
     }
   });
-
-  // Recursive renderer that creates a nested element tree.
-  const renderItem = (item: DroppedItem, parent?: DroppedItem): JSX.Element => {
-    // If there is a parent, compute the child's coordinates relative to it.
-    const posX = parent ? item.x - parent.x : item.x;
-    const posY = parent ? item.y - parent.y : item.y;
-
-    let innerElement: JSX.Element;
-
-    switch (item.componentType) {
-      case "card":
-        innerElement = (
-          <div
-            className="p-4 rounded shadow bg-gray-800 text-white"
-            style={{
-              position: "relative", // This ensures that absolute children position relative to the card itself.
-              width: item.width ? `${item.width}px` : "auto",
-              height: item.height ? `${item.height}px` : "auto",
-              backgroundColor: item.bgColor,
-              borderRadius: item.borderRadius
-                ? `${item.borderRadius}px`
-                : undefined,
-              fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-            }}
-          >
-            {item.label || "Card Component"}
-            {containerMap[item.id] && renderChildren(item)}
-          </div>
-        );
-        break;
-      case "button":
-        innerElement = (
-          <button
-            className="bg-black text-white px-4 py-2 rounded"
-            style={{
-              backgroundColor: item.bgColor,
-              color: item.textColor,
-              borderRadius: item.borderRadius
-                ? `${item.borderRadius}px`
-                : undefined,
-              fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-            }}
-          >
-            {item.label || "Button"}
-          </button>
-        );
-        break;
-      case "text":
-        innerElement = (
-          <p
-            className="text-gray-400"
-            style={{
-              fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-              color: item.textColor,
-            }}
-          >
-            {item.label || "Text Element"}
-          </p>
-        );
-        break;
-      case "input":
-        innerElement = (
-          <input
-            className="border rounded p-1"
-            style={{
-              borderColor: item.borderColor,
-              fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-            }}
-            placeholder="Input Value"
-          />
-        );
-        break;
-      default:
-        innerElement = <div>Unknown Component</div>;
-    }
-
-    return (
-      <div
-        key={item.id}
-        style={{
-          position: "absolute",
-          top: `${posY}px`,
-          left: `${posX}px`,
-        }}
-      >
-        {innerElement}
-      </div>
-    );
-  };
-
-  const renderChildren = (parent: DroppedItem): JSX.Element[] | null => {
-    return (
-      containerMap[parent.id]?.map((child) => renderItem(child, parent)) || null
-    );
-  };
-
-  // Filter for top-level items (those with no parentId)
+  // Filter top-level items (no parentId)
   const topLevelItems = items.filter((item) => !item.parentId);
 
+  // Optionally, generate the code string for preview purposes.
   const code = generateComponentCode(items);
 
   return (
@@ -173,11 +78,15 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
         className="relative bg-gray-100"
         style={{ width: "100vw", height: "100vh", overflow: "auto" }}
       >
-        {topLevelItems.map((item) => renderItem(item))}
+        {topLevelItems.map((item) => (
+          <DroppedItemRenderer
+            key={item.id}
+            item={item}
+            containerMap={containerMap}
+          />
+        ))}
       </div>
-
       <div>
-        {/* Optionally show the generated code as a preview */}
         <pre className="mt-8 bg-black p-4 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap">
           {code}
         </pre>
