@@ -76,7 +76,7 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
     <>
       <div
         className="relative bg-gray-100"
-        style={{ width: "100vw", height: "100vh", overflow: "auto" }}
+        style={{ height: "100vh", overflow: "auto" }}
       >
         {topLevelItems.map((item) => (
           <DroppedItemRenderer
