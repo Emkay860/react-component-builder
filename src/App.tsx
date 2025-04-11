@@ -8,9 +8,11 @@ import {
 } from "@dnd-kit/core";
 import { useState } from "react";
 import Canvas from "./components/Canvas";
+import CodePreview from "./components/CodePreview";
 import GhostOverlay from "./components/GhostOverlay";
 import PropertyPanel from "./components/PropertyPanel";
 import Sidebar from "./components/Sidebar";
+import GeneratedTestPage from "./pages/GeneratedTestPage";
 import { DroppedItem } from "./types";
 
 export default function App() {
@@ -22,12 +24,13 @@ export default function App() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // New state: currentPage (either "editor" or "preview")
+  const [currentPage, setCurrentPage] = useState("editor");
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
     setActiveId(String(event.active.id));
 
-    // Check if this drag is from an element already on the canvas.
     const existingItem = items.find(
       (item) => item.id === String(event.active.id)
     );
@@ -95,18 +98,39 @@ export default function App() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex h-screen w-screen">
-        <Sidebar />
-        <Canvas
-          items={items}
-          onSelect={setSelectedId}
-          selectedId={selectedId}
-        />
-        <PropertyPanel
-          selectedItem={items.find((item) => item.id === selectedId)}
-          updateItem={updateItem}
-        />
+      {/* Simple navigation buttons to switch views */}
+      <div className="flex p-4 bg-gray-100 space-x-4">
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+          onClick={() => setCurrentPage("editor")}
+        >
+          Editor
+        </button>
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded"
+          onClick={() => setCurrentPage("preview")}
+        >
+          Preview
+        </button>
       </div>
+
+      {currentPage === "editor" && (
+        <div className="flex h-screen w-screen">
+          <Sidebar />
+          <Canvas
+            items={items}
+            onSelect={setSelectedId}
+            selectedId={selectedId}
+          />
+          <PropertyPanel
+            selectedItem={items.find((item) => item.id === selectedId)}
+            updateItem={updateItem}
+          />
+          <CodePreview items={items} />
+        </div>
+      )}
+
+      {currentPage === "preview" && <GeneratedTestPage items={items} />}
 
       <DragOverlay>
         {activeId && activeType && <GhostOverlay activeType={activeType} />}
