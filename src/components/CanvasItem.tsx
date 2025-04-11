@@ -92,6 +92,8 @@ export default function CanvasItem({
               : undefined,
           fontSize:
             item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
         };
       case "card":
         return {
@@ -116,6 +118,8 @@ export default function CanvasItem({
           borderColor: item.borderColor,
           fontSize:
             item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
         };
       default:
         return {};
