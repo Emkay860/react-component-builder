@@ -4,13 +4,13 @@ import { useDroppable } from "@dnd-kit/core";
 import React, { useState } from "react";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
-import ContextMenu, { MenuItem } from "./menus/ContextMenu";
+import ContextMenu from "./menus/ContextMenu";
+import { getDefaultMenuItems } from "./menus/menuItems";
 
 type Props = {
   items: DroppedItem[];
   onSelect: (id: string | null) => void;
   selectedId: string | null;
-  // When an item is to be deleted, the parent should remove it from state.
   onDelete: (id: string) => void;
 };
 
@@ -29,15 +29,12 @@ export default function Canvas({
   } | null>(null);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Clear selection if the canvas itself is clicked (without modifier keys)
     if (e.currentTarget === e.target && !e.ctrlKey) {
       onSelect(null);
     }
-    // Hides any open context menu
     if (contextMenu) setContextMenu(null);
   };
 
-  // Callback for right-click on a canvas item.
   const handleItemContextMenu = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
     setContextMenu({
@@ -48,20 +45,10 @@ export default function Canvas({
     onSelect(id);
   };
 
-  // Define menu items for the context menu.
-  const menuItems: MenuItem[] = [
-    {
-      label: "Delete",
-      onClick: () => {
-        if (contextMenu) {
-          onDelete(contextMenu.id);
-        }
-      },
-    },
-    // You can easily add more items here, for example:
-    // { label: "Edit", onClick: () => { ... } },
-    // { label: "Duplicate", onClick: () => { ... } },
-  ];
+  // Use getDefaultMenuItems to generate the menu items, if a context menu is open.
+  const menuItems = contextMenu
+    ? getDefaultMenuItems(contextMenu.id, onDelete)
+    : [];
 
   return (
     <div

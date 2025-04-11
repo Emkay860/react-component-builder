@@ -7,15 +7,15 @@ export type PropertyField = {
   type: "text" | "number" | "color" | "boolean";
 };
 
-export const componentProperties: Partial<
-  Record<ComponentType, PropertyField[]>
-> = {
+export const componentProperties: Partial<Record<ComponentType, PropertyField[]>> = {
   button: [
     { label: "Label", property: "label", type: "text" },
     { label: "Background Color", property: "bgColor", type: "color" },
     { label: "Text Color", property: "textColor", type: "color" },
     { label: "Border Radius", property: "borderRadius", type: "number" },
     { label: "Font Size", property: "fontSize", type: "number" },
+    { label: "Width", property: "width", type: "number" },
+    { label: "Height", property: "height", type: "number" },
   ],
   text: [
     { label: "Text", property: "label", type: "text" },
