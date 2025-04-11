@@ -1,4 +1,4 @@
-// PropertyPanel.tsx
+// src/PropertyPanel.tsx
 "use client";
 import {
   componentProperties,
@@ -69,7 +69,11 @@ export default function PropertyPanel({
               {field.type === "text" && (
                 <input
                   type="text"
-                  value={(selectedItem[field.property] as string) || ""}
+                  value={
+                    (selectedItem[field.property] as string) ??
+                    (field.defaultValue as string) ??
+                    ""
+                  }
                   onChange={(e) =>
                     updateItem(selectedItem.id, {
                       [field.property]: e.target.value,
@@ -81,7 +85,13 @@ export default function PropertyPanel({
               {field.type === "number" && (
                 <input
                   type="number"
-                  value={Number(selectedItem[field.property]) || 0}
+                  value={
+                    selectedItem[field.property] !== undefined
+                      ? Number(selectedItem[field.property])
+                      : field.defaultValue !== undefined
+                      ? Number(field.defaultValue)
+                      : 0
+                  }
                   onChange={(e) =>
                     updateItem(selectedItem.id, {
                       [field.property]: Number(e.target.value),
@@ -93,7 +103,11 @@ export default function PropertyPanel({
               {field.type === "color" && (
                 <input
                   type="color"
-                  value={(selectedItem[field.property] as string) || "#000000"}
+                  value={
+                    (selectedItem[field.property] as string) ??
+                    (field.defaultValue as string) ??
+                    "#000000"
+                  }
                   onChange={(e) =>
                     updateItem(selectedItem.id, {
                       [field.property]: e.target.value,
@@ -105,7 +119,13 @@ export default function PropertyPanel({
               {field.type === "boolean" && (
                 <input
                   type="checkbox"
-                  checked={Boolean(selectedItem[field.property])}
+                  checked={
+                    selectedItem[field.property] !== undefined
+                      ? Boolean(selectedItem[field.property])
+                      : field.defaultValue !== undefined
+                      ? Boolean(field.defaultValue)
+                      : false
+                  }
                   onChange={(e) =>
                     updateItem(selectedItem.id, {
                       [field.property]: e.target.checked,

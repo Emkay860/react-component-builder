@@ -59,6 +59,8 @@ function elementMarkup(item: DroppedItem): string {
       styleObj = {
         borderRadius: item.borderRadius ? addPx(item.borderRadius) : undefined,
         fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
+        width: item.width ? addPx(item.width) : "auto",
+        height: item.height ? addPx(item.height) : "auto",
         backgroundColor: item.bgColor,
         color: item.textColor,
       };

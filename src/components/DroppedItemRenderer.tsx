@@ -21,10 +21,13 @@ const getRelativePosition = (item: DroppedItem, parent?: DroppedItem) => {
 };
 
 // Card renderer
-const CardRenderer: React.FC<DroppedItemRendererProps> = ({ item, children }) => {
+const CardRenderer: React.FC<DroppedItemRendererProps> = ({
+  item,
+  children,
+}) => {
   return (
     <div
-      className="p-4 rounded shadow bg-gray-800 text-white relative"
+      className="p-4"
       style={{
         width: item.width ? `${item.width}px` : "auto",
         height: item.height ? `${item.height}px` : "auto",
@@ -43,8 +46,10 @@ const CardRenderer: React.FC<DroppedItemRendererProps> = ({ item, children }) =>
 const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <button
-      className="bg-black text-white px-4 py-2 rounded"
+      className=""
       style={{
+        width: item.width ? `${item.width}px` : "auto",
+        height: item.height ? `${item.height}px` : "auto",
         backgroundColor: item.bgColor,
         color: item.textColor,
         borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
@@ -60,7 +65,7 @@ const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
 const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <p
-      className="text-gray-400"
+      className=""
       style={{
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
         color: item.textColor,
@@ -75,7 +80,7 @@ const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
 const InputRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <input
-      className="border rounded p-1"
+      className=""
       style={{
         borderColor: item.borderColor,
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
