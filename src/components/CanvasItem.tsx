@@ -1,7 +1,7 @@
 // CanvasItem.tsx
 "use client";
-import { useDraggable } from "@dnd-kit/core";
-import { useEffect, useRef } from "react";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
+import React, { useEffect, useRef } from "react";
 import componentStyles from "../styles/componentStyles";
 import { DroppedItem } from "../types";
 
@@ -12,15 +12,25 @@ type Props = {
 };
 
 export default function CanvasItem({ item, onSelect, isSelected }: Props) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: item.id,
-    });
+  // useDraggable for all items.
+  const {
+    attributes,
+    listeners,
+    setNodeRef: draggableRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: item.id,
+  });
+
+  // useDroppable for the item.
+  // For non-container items, this dropRef may not be used,
+  // but for container items we will attach it to an overlay.
+  const { setNodeRef: droppableRef } = useDroppable({ id: item.id });
 
   const innerRef = useRef<HTMLDivElement>(null);
 
-  // Attach a native pointerdown listener to guarantee selection events fire,
-  // regardless of how dnd-kit’s synthetic events behave.
+  // Attach a native pointerdown listener to guarantee selection.
   useEffect(() => {
     const innerEl = innerRef.current;
     if (!innerEl) return;
@@ -41,8 +51,8 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
     };
   }, [isDragging, onSelect, item.id]);
 
-  const baseStyle = {
-    position: "absolute" as const,
+  const baseStyle: React.CSSProperties = {
+    position: "absolute",
     top: item.y,
     left: item.x,
     transform: transform
@@ -56,34 +66,43 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
   const containerClasses = styleConfig.container || "cursor-grab";
   const elementClasses = styleConfig.element || "";
 
-  // Helper: Generate a dynamic inline style based on the item's properties.
+  // Helper: Generate dynamic inline styles.
   const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {
     switch (item.componentType) {
       case "button":
         return {
           backgroundColor: item.bgColor,
           color: item.textColor,
-          borderRadius: item.borderRadius !== undefined ? `${item.borderRadius}px` : undefined,
-          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       case "card":
         return {
           backgroundColor: item.bgColor,
-          borderRadius: item.borderRadius !== undefined ? `${item.borderRadius}px` : undefined,
-          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          // Apply width and height if provided; otherwise fallback to auto.
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
           width: item.width ? `${item.width}px` : "auto",
           height: item.height ? `${item.height}px` : "auto",
         };
       case "text":
         return {
           color: item.textColor,
-          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       case "input":
         return {
           borderColor: item.borderColor,
-          fontSize: item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
         };
       default:
         return {};
@@ -118,7 +137,6 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
       }
       case "input": {
         const wrapperClasses = styleConfig.elementWrapper || "";
-        // For input, we stop propagation so that native editing works.
         return (
           <div className={wrapperClasses}>
             <input
@@ -138,7 +156,7 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
 
   return (
     <div
-      ref={setNodeRef}
+      ref={draggableRef}
       style={baseStyle}
       {...attributes}
       {...listeners}
@@ -146,11 +164,24 @@ export default function CanvasItem({ item, onSelect, isSelected }: Props) {
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
     >
-      {/* 
-        innerRef is attached to this wrapper so that our native pointerdown listener
-        fires in capture mode.
-      */}
+      {/* Main content */}
       <div ref={innerRef}>{renderContent()}</div>
+
+      {/* If this item is a container, render a full overlay with the droppable ref */}
+      {item.isContainer && (
+        <div
+          ref={droppableRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            // Optionally, add a transparent background color for debugging:
+            // backgroundColor: "rgba(0,0,0,0.1)",
+          }}
+        />
+      )}
     </div>
   );
 }

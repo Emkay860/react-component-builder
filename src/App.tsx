@@ -24,7 +24,6 @@ export default function App() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // New state: currentPage (either "editor" or "preview")
   const [currentPage, setCurrentPage] = useState("editor");
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -50,12 +49,18 @@ export default function App() {
     setActiveId(null);
     setActiveType(null);
     if (!startCoordinates) return;
-    if (over?.id !== "canvas") return;
 
+    // Obtain the canvas element rect
     const canvas = document.getElementById("canvas-root");
     if (!canvas) return;
     const canvasRect = canvas.getBoundingClientRect();
     const isExistingItem = items.some((item) => item.id === String(active.id));
+
+    // Only set parentId if the drop target isn't "canvas" or the active item itself
+    const parentId =
+      over && over.id !== "canvas" && over.id !== String(active.id)
+        ? String(over.id)
+        : undefined;
 
     if (isExistingItem) {
       const finalX = startCoordinates.x + delta.x;
@@ -63,7 +68,7 @@ export default function App() {
       setItems((prev) =>
         prev.map((item) =>
           item.id === String(active.id)
-            ? { ...item, x: finalX, y: finalY }
+            ? { ...item, x: finalX, y: finalY, parentId: parentId }
             : item
         )
       );
@@ -83,6 +88,7 @@ export default function App() {
               ? "Button"
               : "Text Element"
             : undefined,
+        parentId: parentId,
       };
       setItems((prev) => [...prev, newItem]);
     }
@@ -98,7 +104,6 @@ export default function App() {
 
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      {/* Simple navigation buttons to switch views */}
       <div className="flex p-4 bg-gray-100 space-x-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"

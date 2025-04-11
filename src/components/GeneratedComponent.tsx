@@ -60,9 +60,10 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
   const code = generateComponentCode(items);
 
   return (
-    <div className="flex flex-wrap gap-4 p-4 bg-gray-100">
+    <div className=" bg-gray-100">
       {items.map((item) => (
-        <div key={item.id}>{/* Render each element from the snapshot */}
+        <div key={item.id}>
+          {/* Render each element from the snapshot */}
           {(() => {
             switch (item.componentType) {
               case "button":
@@ -72,8 +73,12 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
                     style={{
                       backgroundColor: item.bgColor,
                       color: item.textColor,
-                      borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
-                      fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+                      borderRadius: item.borderRadius
+                        ? `${item.borderRadius}px`
+                        : undefined,
+                      fontSize: item.fontSize
+                        ? `${item.fontSize}px`
+                        : undefined,
                     }}
                   >
                     {item.label || "Button"}
@@ -85,8 +90,12 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
                     className="p-4 border rounded shadow"
                     style={{
                       backgroundColor: item.bgColor,
-                      borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
-                      fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+                      borderRadius: item.borderRadius
+                        ? `${item.borderRadius}px`
+                        : undefined,
+                      fontSize: item.fontSize
+                        ? `${item.fontSize}px`
+                        : undefined,
                       width: item.width ? `${item.width}px` : "auto",
                       height: item.height ? `${item.height}px` : "auto",
                     }}
@@ -100,7 +109,9 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
                     className="p-2"
                     style={{
                       color: item.textColor,
-                      fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+                      fontSize: item.fontSize
+                        ? `${item.fontSize}px`
+                        : undefined,
                     }}
                   >
                     {item.label || "Text Element"}
@@ -112,7 +123,9 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
                     className="border rounded p-1"
                     style={{
                       borderColor: item.borderColor,
-                      fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+                      fontSize: item.fontSize
+                        ? `${item.fontSize}px`
+                        : undefined,
                     }}
                     placeholder="Input Value"
                   />

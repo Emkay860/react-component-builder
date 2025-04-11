@@ -17,7 +17,7 @@ export default function CodePreview({ items }: CodePreviewProps) {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 bg-white border rounded p-4 shadow-lg z-50">
+    <div className="fixed bottom-4 left-4 bg-white border rounded p-4 shadow-lg z-50">
       <button
         onClick={handleGenerateCode}
         className="px-3 py-1 bg-blue-500 text-white rounded"
