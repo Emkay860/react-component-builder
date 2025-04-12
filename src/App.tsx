@@ -1,4 +1,3 @@
-// App.tsx
 "use client";
 import {
   DndContext,
@@ -26,18 +25,41 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState("editor");
 
+  // --- Pan/Zoom state in App (virtual coordinates) ---
+  const [canvasZoom, setCanvasZoom] = useState(1);
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+  const handlePanZoomChange = (
+    newZoom: number,
+    newOffset: { x: number; y: number }
+  ) => {
+    setCanvasZoom(newZoom);
+    setCanvasOffset(newOffset);
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
     setActiveId(String(event.active.id));
 
+    // Obtain the canvas drop zone for coordinate conversion.
+    const canvas = document.getElementById("canvas-root");
+    if (!canvas) return;
+    const canvasRect = canvas.getBoundingClientRect();
+
+    const draggedType = event.active.data.current?.componentType;
     const existingItem = items.find(
       (item) => item.id === String(event.active.id)
     );
-    const draggedType = event.active.data.current?.componentType;
+
     if (existingItem) {
+      // For an existing item, we're already storing virtual coordinates.
       setStartCoordinates({ x: existingItem.x, y: existingItem.y });
     } else {
-      setStartCoordinates({ x: mouseEvent.clientX, y: mouseEvent.clientY });
+      // Convert from screen to virtual coordinates:
+      const virtualX =
+        (mouseEvent.clientX - canvasRect.left - canvasOffset.x) / canvasZoom;
+      const virtualY =
+        (mouseEvent.clientY - canvasRect.top - canvasOffset.y) / canvasZoom;
+      setStartCoordinates({ x: virtualX, y: virtualY });
       if (draggedType) {
         setActiveType(draggedType);
       }
@@ -50,34 +72,43 @@ export default function App() {
     setActiveType(null);
     if (!startCoordinates) return;
 
-    // Obtain the canvas element rect
-    const canvas = document.getElementById("canvas-root");
-    if (!canvas) return;
-    const canvasRect = canvas.getBoundingClientRect();
-    const isExistingItem = items.some((item) => item.id === String(active.id));
+    // Even with a threshold check, now we add the scaled delta.
+    const threshold = 1;
+    if (Math.abs(delta.x) < threshold && Math.abs(delta.y) < threshold) {
+      setStartCoordinates(null);
+      return;
+    }
 
+    // For delta conversion, note that if drag delta is in screen pixels,
+    // then the corresponding change in virtual coordinates is:
+    const virtualDeltaX = delta.x / canvasZoom;
+    const virtualDeltaY = delta.y / canvasZoom;
+
+    // Final virtual coordinates:
+    const finalVirtualX = startCoordinates.x + virtualDeltaX;
+    const finalVirtualY = startCoordinates.y + virtualDeltaY;
+
+    // (The drop zone's rect is no longer needed because we already converted the start)
+    const isExistingItem = items.some((item) => item.id === String(active.id));
     const parentId =
       over && over.id !== "canvas" && over.id !== String(active.id)
         ? String(over.id)
         : undefined;
 
     if (isExistingItem) {
-      const finalX = startCoordinates.x + delta.x;
-      const finalY = startCoordinates.y + delta.y;
       setItems((prev) =>
         prev.map((item) =>
           item.id === String(active.id)
-            ? { ...item, x: finalX, y: finalY, parentId: parentId }
+            ? { ...item, x: finalVirtualX, y: finalVirtualY, parentId }
             : item
         )
       );
     } else if (active.data.current?.componentType) {
-      const finalX = startCoordinates.x + delta.x - canvasRect.left;
-      const finalY = startCoordinates.y + delta.y - canvasRect.top;
+      // Create a new item.
       const newItem: DroppedItem = {
         id: `canvas-${active.data.current.componentType}-${Date.now()}`,
-        x: finalX,
-        y: finalY,
+        x: finalVirtualX,
+        y: finalVirtualY,
         zIndex: 1,
         componentType: active.data.current.componentType,
         label:
@@ -94,14 +125,14 @@ export default function App() {
     setStartCoordinates(null);
   };
 
-  // Update an element's properties (from the Property Panel)
+  // Update an element’s properties from the property panel.
   const updateItem = (id: string, newProps: Partial<DroppedItem>) => {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...newProps } : item))
     );
   };
 
-  // New deletion callback that removes an item from state.
+  // New deletion callback.
   const handleDelete = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
     if (selectedId === id) {
@@ -129,12 +160,14 @@ export default function App() {
       {currentPage === "editor" && (
         <div className="flex h-screen w-screen">
           <Sidebar />
-          {/* Pass the new onDelete callback into Canvas */}
           <Canvas
             items={items}
             onSelect={setSelectedId}
             selectedId={selectedId}
             onDelete={handleDelete}
+            canvasZoom={canvasZoom}
+            canvasOffset={canvasOffset}
+            onPanZoomChange={handlePanZoomChange}
           />
           <PropertyPanel
             selectedItem={items.find((item) => item.id === selectedId)}
