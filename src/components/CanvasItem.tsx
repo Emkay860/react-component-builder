@@ -1,4 +1,4 @@
-// CanvasItem.tsx
+// src/components/CanvasItem.tsx
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import React, { useEffect, useRef } from "react";
@@ -55,6 +55,78 @@ export default function CanvasItem({
     };
   }, [isDragging, onSelect, item.id]);
 
+  // Build common CSS styles from additional properties.
+  const getCommonStyles = (item: DroppedItem): React.CSSProperties => ({
+    margin: item.margin || undefined,
+    padding: item.padding || undefined,
+    borderWidth:
+      item.borderWidth !== undefined ? `${item.borderWidth}px` : undefined,
+    borderStyle: item.borderStyle || undefined,
+    borderColor: item.borderColor || undefined,
+    boxShadow: item.boxShadow || undefined,
+    opacity: item.opacity,
+    fontFamily: item.fontFamily || undefined,
+  });
+
+  // Compute dynamic styles based on component type, merging with common styles.
+  const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {
+    let style: React.CSSProperties = {};
+    const commonStyles = getCommonStyles(item);
+
+    switch (item.componentType) {
+      case "button":
+        style = {
+          backgroundColor: item.bgColor,
+          color: item.textColor,
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
+          ...commonStyles,
+        };
+        break;
+      case "card":
+        style = {
+          backgroundColor: item.bgColor,
+          borderRadius:
+            item.borderRadius !== undefined
+              ? `${item.borderRadius}px`
+              : undefined,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
+          ...commonStyles,
+        };
+        break;
+      case "text":
+        style = {
+          color: item.textColor,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          ...commonStyles,
+        };
+        break;
+      case "input":
+        style = {
+          borderColor: item.borderColor,
+          fontSize:
+            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
+          width: item.width ? `${item.width}px` : "auto",
+          height: item.height ? `${item.height}px` : "auto",
+          ...commonStyles,
+        };
+        break;
+      default:
+        style = { ...commonStyles };
+    }
+    return style;
+  };
+
   const baseStyle: React.CSSProperties = {
     position: "absolute",
     top: item.y,
@@ -66,65 +138,14 @@ export default function CanvasItem({
     cursor: isDragging ? "grabbing" : "grab",
   };
 
-  // Cast the fallback value so that these properties exist in the type.
-  const styleConfig =
-    componentStyles[item.componentType] ||
-    ({} as {
-      container?: string;
-      element?: string;
-      overlay?: string;
-      elementWrapper?: string;
-    });
-
-  const containerClasses = styleConfig.container || "cursor-grab";
-  const elementClasses = styleConfig.element || "";
-
-  // Helper: Generate dynamic inline styles.
-  const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {
-    switch (item.componentType) {
-      case "button":
-        return {
-          backgroundColor: item.bgColor,
-          color: item.textColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-        };
-      case "card":
-        return {
-          backgroundColor: item.bgColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-        };
-      case "text":
-        return {
-          color: item.textColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-        };
-      case "input":
-        return {
-          borderColor: item.borderColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-        };
-      default:
-        return {};
-    }
+  // Get styling classes from our componentStyles configuration.
+  const styleConfig = componentStyles[item.componentType] || {
+    container: "cursor-grab",
+    element: "",
   };
+
+  const containerClasses = styleConfig.container;
+  const elementClasses = styleConfig.element;
 
   const renderContent = () => {
     switch (item.componentType) {
@@ -188,7 +209,7 @@ export default function CanvasItem({
       {/* Main content */}
       <div ref={innerRef}>{renderContent()}</div>
 
-      {/* If this item is a container, render a full overlay with the droppable ref */}
+      {/* Render a full overlay for container items */}
       {item.isContainer && (
         <div
           ref={droppableRef}
@@ -198,7 +219,6 @@ export default function CanvasItem({
             left: 0,
             width: "100%",
             height: "100%",
-            // Optionally add a transparent debug background, e.g. backgroundColor: "rgba(0,0,0,0.1)"
           }}
         />
       )}

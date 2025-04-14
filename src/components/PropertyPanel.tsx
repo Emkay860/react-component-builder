@@ -29,10 +29,10 @@ export default function PropertyPanel({
     componentProperties[selectedItem.componentType] || [];
 
   return (
-    <div className="w-64 p-4 border-l">
+    <div className="w-64 p-4 border-l overflow-y-auto">
       <h2 className="text-lg font-bold mb-4">Properties</h2>
 
-      {/* General properties common to all elements */}
+      {/* General properties (X, Y, and Z-Index) */}
       <div className="mb-4">
         <h3 className="text-md font-semibold mb-2">General</h3>
         <div className="mb-4">
@@ -50,9 +50,20 @@ export default function PropertyPanel({
           <label className="block text-sm font-medium">Y Position</label>
           <input
             type="number"
-            value={-selectedItem.y} // Inverting, as before
+            value={selectedItem.y}
             onChange={(e) =>
-              updateItem(selectedItem.id, { y: -Number(e.target.value) })
+              updateItem(selectedItem.id, { y: Number(e.target.value) })
+            }
+            className="mt-1 block w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-sm font-medium">Z-Index</label>
+          <input
+            type="number"
+            value={selectedItem.zIndex !== undefined ? selectedItem.zIndex : 1}
+            onChange={(e) =>
+              updateItem(selectedItem.id, { zIndex: Number(e.target.value) })
             }
             className="mt-1 block w-full border border-gray-300 rounded p-2"
           />

@@ -1,4 +1,4 @@
-// CodePreview.tsx (new component)
+// CodePreview.tsx
 "use client";
 import { useState } from "react";
 import { DroppedItem } from "../types";
