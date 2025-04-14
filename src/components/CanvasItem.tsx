@@ -102,7 +102,7 @@ export default function CanvasItem({
         break;
       case "input":
         style = {
-          borderColor: item.borderColor,
+          // borderColor: item.borderColor,
           fontSize:
             item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
           width: item.width ? `${item.width}px` : "auto",
