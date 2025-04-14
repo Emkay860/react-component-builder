@@ -3,6 +3,7 @@
 import React from "react";
 import type { DroppedItem } from "../types";
 import { generateComponentCode } from "../utils/generateComponentCode";
+import CodeBlock from "./CodeBlock";
 import { DroppedItemRenderer } from "./DroppedItemRenderer";
 
 interface GeneratedComponentProps {
@@ -57,9 +58,9 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
         ))}
       </div>
       <div>
-        <pre className="mt-8 bg-black p-4 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap">
-          {code}
-        </pre>
+        {/* <pre className="mt-8 bg-black p-4 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap"> */}
+        <CodeBlock language="javascript">{code}</CodeBlock>
+        {/* </pre> */}
       </div>
     </>
   );
