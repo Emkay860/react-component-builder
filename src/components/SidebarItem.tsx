@@ -22,9 +22,23 @@ export default function SidebarItem({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className="cursor-grab bg-white border border-gray-300 rounded p-2 mb-2 shadow text-gray-900 hover:bg-gray-100"
+      className="p-3 bg-white rounded shadow cursor-move hover:bg-blue-50 flex items-center justify-between"
     >
-      {name}
+      <span className="text-gray-700 font-medium">{name}</span>
+      <svg
+        className="w-4 h-4 text-gray-500"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 8h16M4 16h16"
+        />
+      </svg>
     </div>
   );
 }
