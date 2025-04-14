@@ -144,7 +144,7 @@ export default function App() {
       </div>
 
       {currentPage === "editor" && (
-        <div className="flex h-screen w-screen">
+        <div className="flex h-[90vh] w-screen">
           <Sidebar />
           {/* Pass the new onDelete & onDuplicate callbacks into Canvas */}
           <Canvas
