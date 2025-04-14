@@ -19,7 +19,7 @@ export default function CodePreview({ items }: CodePreviewProps) {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 bg-white border rounded p-4 shadow-lg z-50">
+    <div className="fixed bottom-4 left-80 bg-white border rounded p-4 shadow-lg z-50">
       {/* Close Button */}
       {isOpen && (
         <button
