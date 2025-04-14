@@ -49,7 +49,7 @@ export function containerMarkup(
     width: item.width ? addPx(item.width) : "auto",
     height: item.height ? addPx(item.height) : "auto",
     // Use backgroundColor property (using item.backgroundColor if set, falling back to item.bgColor)
-    backgroundColor: item.backgroundColor || item.bgColor,
+    backgroundColor: item.backgroundColor,
   };
 
   // Merge with common styles.
