@@ -1,4 +1,3 @@
-// App.tsx
 "use client";
 import {
   DndContext,
@@ -37,7 +36,10 @@ export default function App() {
     if (existingItem) {
       setStartCoordinates({ x: existingItem.x, y: existingItem.y });
     } else {
-      setStartCoordinates({ x: mouseEvent.clientX, y: mouseEvent.clientY });
+      setStartCoordinates({
+        x: mouseEvent.clientX,
+        y: mouseEvent.clientY,
+      });
       if (draggedType) {
         setActiveType(draggedType);
       }
@@ -109,6 +111,21 @@ export default function App() {
     }
   };
 
+  // New duplicate callback.
+  // This finds the original item, creates a copy with a new unique id (and a slight offset), and adds it to state.
+  const handleDuplicate = (id: string) => {
+    const item = items.find((it) => it.id === id);
+    if (!item) return;
+    const newItem: DroppedItem = {
+      ...item,
+      id: `${item.id}-dup-${Date.now()}`,
+      // Offset the duplicate for visibility.
+      x: item.x + 10,
+      y: item.y + 10,
+    };
+    setItems((prev) => [...prev, newItem]);
+  };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex p-4 bg-gray-100 space-x-4">
@@ -129,12 +146,13 @@ export default function App() {
       {currentPage === "editor" && (
         <div className="flex h-screen w-screen">
           <Sidebar />
-          {/* Pass the new onDelete callback into Canvas */}
+          {/* Pass the new onDelete & onDuplicate callbacks into Canvas */}
           <Canvas
             items={items}
             onSelect={setSelectedId}
             selectedId={selectedId}
             onDelete={handleDelete}
+            onDuplicate={handleDuplicate}
           />
           <PropertyPanel
             selectedItem={items.find((item) => item.id === selectedId)}

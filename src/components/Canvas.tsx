@@ -1,4 +1,3 @@
-// src/components/Canvas.tsx
 "use client";
 import { useDroppable } from "@dnd-kit/core";
 import React, { useState } from "react";
@@ -9,9 +8,10 @@ import { getDefaultMenuItems } from "./menus/menuItems";
 
 type Props = {
   items: DroppedItem[];
-  onSelect: (id: string | null) => void;
+  onSelect: (id: string, event?: React.MouseEvent) => void;
   selectedId: string | null;
   onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
 };
 
 export default function Canvas({
@@ -19,9 +19,9 @@ export default function Canvas({
   onSelect,
   selectedId,
   onDelete,
+  onDuplicate,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
-
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
@@ -29,26 +29,17 @@ export default function Canvas({
   } | null>(null);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.currentTarget === e.target && !e.ctrlKey) {
-      onSelect(null);
+    if (e.currentTarget === e.target) {
+      onSelect("", e);
     }
     if (contextMenu) setContextMenu(null);
   };
 
   const handleItemContextMenu = (e: React.MouseEvent, id: string) => {
     e.preventDefault();
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      id,
-    });
-    onSelect(id);
+    setContextMenu({ x: e.clientX, y: e.clientY, id });
+    onSelect(id, e);
   };
-
-  // Use getDefaultMenuItems to generate the menu items, if a context menu is open.
-  const menuItems = contextMenu
-    ? getDefaultMenuItems(contextMenu.id, onDelete)
-    : [];
 
   return (
     <div
@@ -64,7 +55,7 @@ export default function Canvas({
           key={item.id}
           item={item}
           onSelect={onSelect}
-          isSelected={item.id === selectedId}
+          isSelected={selectedId === item.id}
           onContextMenu={handleItemContextMenu}
         />
       ))}
@@ -77,7 +68,7 @@ export default function Canvas({
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          items={menuItems}
+          items={getDefaultMenuItems(contextMenu.id, onDelete, onDuplicate)}
           onClose={() => setContextMenu(null)}
         />
       )}

@@ -15,7 +15,7 @@ export interface ContextMenuProps {
 const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
   return (
     <div
-    className="text-black w-[200px]"
+      className="text-black w-[200px] bg-white border rounded shadow z-50"
       style={{
         position: "fixed",
         top: y,
@@ -26,35 +26,30 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
         boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
         zIndex: 1000,
       }}
-      onContextMenu={(e) => e.preventDefault()}
-      onClick={(e) => {
-        // Prevent clicks inside the menu from propagating so the menu isn't closed prematurely.
-        e.stopPropagation();
-      }}
+      // onContextMenu={(e) => e.preventDefault()}
+      onBlur={onClose}
+      tabIndex={0}
+      // onClick={(e) => {
+      //   // Prevent clicks inside the menu from propagating so the menu isn't closed prematurely.
+      //   e.stopPropagation();
+      // }}
     >
       {items.map((item, index) => (
-        <button
+        <div
           key={index}
           onClick={(e) => {
             e.stopPropagation();
             item.onClick();
             onClose();
           }}
-          style={{
-            display: "block",
-            width: "100%",
-            textAlign: "left",
-            border: "none",
-            background: "none",
-            padding: "4px 0",
-            cursor: "pointer",
-          }}
+          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
         >
           {item.label}
-        </button>
+        </div>
       ))}
     </div>
   );
 };
 
 export default ContextMenu;
+
