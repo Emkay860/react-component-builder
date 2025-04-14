@@ -4,6 +4,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import React, { useEffect, useRef } from "react";
 import componentStyles from "../styles/componentStyles";
 import { DroppedItem } from "../types";
+import { getCommonStyles } from "../utils/commonStylesHelper";
 
 type Props = {
   item: DroppedItem;
@@ -55,19 +56,6 @@ export default function CanvasItem({
     };
   }, [isDragging, onSelect, item.id]);
 
-  // Build common CSS styles from additional properties.
-  const getCommonStyles = (item: DroppedItem): React.CSSProperties => ({
-    margin: item.margin || undefined,
-    padding: item.padding || undefined,
-    borderWidth:
-      item.borderWidth !== undefined ? `${item.borderWidth}px` : undefined,
-    borderStyle: item.borderStyle || undefined,
-    borderColor: item.borderColor || undefined,
-    boxShadow: item.boxShadow || undefined,
-    opacity: item.opacity,
-    fontFamily: item.fontFamily || undefined,
-    backgroundColor: item.backgroundColor,
-  });
 
   // Compute dynamic styles based on component type, merging with common styles.
   const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {

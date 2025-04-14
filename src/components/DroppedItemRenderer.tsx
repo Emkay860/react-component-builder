@@ -2,6 +2,10 @@
 "use client";
 import React from "react";
 import type { DroppedItem } from "../types";
+import { ButtonRenderer } from "./renderers/ButtonRenderer";
+import { CardRenderer } from "./renderers/CardRenderer";
+import { InputRenderer } from "./renderers/InputRenderer";
+import { TextRenderer } from "./renderers/TextRenderer";
 
 export type DroppedItemRendererProps = React.PropsWithChildren<{
   item: DroppedItem;
@@ -18,94 +22,6 @@ const getRelativePosition = (item: DroppedItem, parent?: DroppedItem) => {
     };
   }
   return { x: item.x, y: item.y };
-};
-
-// Helper to extract custom CSS properties for preview.
-const getPreviewCommonStyle = (item: DroppedItem): React.CSSProperties => ({
-  margin: item.margin,
-  padding: item.padding,
-  borderWidth:
-    item.borderWidth !== undefined ? `${item.borderWidth}px` : undefined,
-  borderStyle: item.borderStyle,
-  borderColor: item.borderColor,
-  boxShadow: item.boxShadow,
-  opacity: item.opacity,
-  fontFamily: item.fontFamily,
-  zIndex: item.zIndex,
-});
-
-// Card renderer for preview.
-const CardRenderer: React.FC<DroppedItemRendererProps> = ({
-  item,
-  children,
-}) => {
-  return (
-    <div
-      className="p-4"
-      style={{
-        width: item.width ? `${item.width}px` : "auto",
-        height: item.height ? `${item.height}px` : "auto",
-        backgroundColor: item.bgColor,
-        borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
-        fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-        ...getPreviewCommonStyle(item),
-      }}
-    >
-      {item.label || "Card Component"}
-      {children}
-    </div>
-  );
-};
-
-// Button renderer for preview.
-const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
-  return (
-    <button
-      className=""
-      style={{
-        width: item.width ? `${item.width}px` : "auto",
-        height: item.height ? `${item.height}px` : "auto",
-        backgroundColor: item.bgColor,
-        color: item.textColor,
-        borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
-        fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-        ...getPreviewCommonStyle(item),
-      }}
-    >
-      {item.label || "Button"}
-    </button>
-  );
-};
-
-// Text renderer for preview.
-const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
-  return (
-    <p
-      className=""
-      style={{
-        fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-        color: item.textColor,
-        ...getPreviewCommonStyle(item),
-      }}
-    >
-      {item.label || "Text Element"}
-    </p>
-  );
-};
-
-// Input renderer for preview.
-const InputRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
-  return (
-    <input
-      className=""
-      style={{
-        borderColor: item.borderColor,
-        fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
-        ...getPreviewCommonStyle(item),
-      }}
-      placeholder="Input Value"
-    />
-  );
 };
 
 // Map each component type to its preview renderer.
