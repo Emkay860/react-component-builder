@@ -10,7 +10,7 @@ type CodePreviewProps = {
 
 export default function CodePreview({ items }: CodePreviewProps) {
   const [code, setCode] = useState("");
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleGenerateCode = () => {
     const generated = generateComponentCode(items);
