@@ -17,13 +17,12 @@ export function generateComponentCode(items: DroppedItem[]): string {
   });
 
   // Recursively generate the JSX for an item.
-  // If a parent is provided, compute the child's relative position.
   const generateItemJSX = (item: DroppedItem, parent?: DroppedItem): string => {
+    // Compute relative positions.
     const posX = parent ? addPx(item.x - parent.x) : addPx(item.x);
     const posY = parent ? addPx(item.y - parent.y) : addPx(item.y);
 
     if (containerMap[item.id]) {
-      // For container items with children, get the container's dimensions.
       const containerWidth = item.width ? addPx(item.width) : "auto";
       const containerHeight = item.height ? addPx(item.height) : "auto";
 
@@ -32,13 +31,11 @@ export function generateComponentCode(items: DroppedItem[]): string {
         childrenMarkup += generateItemJSX(child, item);
       });
 
-      // Merge parent's element markup with its children.
       const mergedMarkup = containerMarkup(item, childrenMarkup);
       return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}', width: '${containerWidth}', height: '${containerHeight}' }}>
   ${mergedMarkup}
 </div>`;
     } else {
-      // For non-container items.
       return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
   ${elementMarkup(item)}
 </div>`;

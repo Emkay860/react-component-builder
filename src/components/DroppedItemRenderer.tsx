@@ -1,15 +1,15 @@
-// components/DroppedItemRenderer.tsx
+// src/components/DroppedItemRenderer.tsx
 "use client";
 import React from "react";
 import type { DroppedItem } from "../types";
 
 export type DroppedItemRendererProps = React.PropsWithChildren<{
-    item: DroppedItem;
-    containerMap: Record<string, DroppedItem[]>;
-    parent?: DroppedItem;
-  }>;
-  
+  item: DroppedItem;
+  containerMap: Record<string, DroppedItem[]>;
+  parent?: DroppedItem;
+}>;
 
+// Compute the relative position of a dropped item to its parent, if any.
 const getRelativePosition = (item: DroppedItem, parent?: DroppedItem) => {
   if (parent) {
     return {
@@ -20,7 +20,21 @@ const getRelativePosition = (item: DroppedItem, parent?: DroppedItem) => {
   return { x: item.x, y: item.y };
 };
 
-// Card renderer
+// Helper to extract custom CSS properties for preview.
+const getPreviewCommonStyle = (item: DroppedItem): React.CSSProperties => ({
+  margin: item.margin,
+  padding: item.padding,
+  borderWidth:
+    item.borderWidth !== undefined ? `${item.borderWidth}px` : undefined,
+  borderStyle: item.borderStyle,
+  borderColor: item.borderColor,
+  boxShadow: item.boxShadow,
+  opacity: item.opacity,
+  fontFamily: item.fontFamily,
+  zIndex: item.zIndex,
+});
+
+// Card renderer for preview.
 const CardRenderer: React.FC<DroppedItemRendererProps> = ({
   item,
   children,
@@ -34,6 +48,7 @@ const CardRenderer: React.FC<DroppedItemRendererProps> = ({
         backgroundColor: item.bgColor,
         borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+        ...getPreviewCommonStyle(item),
       }}
     >
       {item.label || "Card Component"}
@@ -42,7 +57,7 @@ const CardRenderer: React.FC<DroppedItemRendererProps> = ({
   );
 };
 
-// Button renderer
+// Button renderer for preview.
 const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <button
@@ -54,6 +69,7 @@ const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
         color: item.textColor,
         borderRadius: item.borderRadius ? `${item.borderRadius}px` : undefined,
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+        ...getPreviewCommonStyle(item),
       }}
     >
       {item.label || "Button"}
@@ -61,7 +77,7 @@ const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   );
 };
 
-// Text renderer
+// Text renderer for preview.
 const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <p
@@ -69,6 +85,7 @@ const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
       style={{
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
         color: item.textColor,
+        ...getPreviewCommonStyle(item),
       }}
     >
       {item.label || "Text Element"}
@@ -76,7 +93,7 @@ const TextRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   );
 };
 
-// Input renderer
+// Input renderer for preview.
 const InputRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
   return (
     <input
@@ -84,12 +101,14 @@ const InputRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
       style={{
         borderColor: item.borderColor,
         fontSize: item.fontSize ? `${item.fontSize}px` : undefined,
+        ...getPreviewCommonStyle(item),
       }}
       placeholder="Input Value"
     />
   );
 };
 
+// Map each component type to its preview renderer.
 const componentRenderers: Record<string, React.FC<DroppedItemRendererProps>> = {
   card: CardRenderer,
   button: ButtonRenderer,
@@ -97,28 +116,37 @@ const componentRenderers: Record<string, React.FC<DroppedItemRendererProps>> = {
   input: InputRenderer,
 };
 
-// Recursive DroppedItemRenderer
+// Recursive DroppedItemRenderer for previewing nested components.
 export const DroppedItemRenderer: React.FC<DroppedItemRendererProps> = ({
   item,
   containerMap,
   parent,
 }) => {
   const { x, y } = getRelativePosition(item, parent);
-  const Renderer = componentRenderers[item.componentType] || (() => <div>Unknown Component</div>);
 
-  // If this item is a container (has children in containerMap), recursively render its children.
+  // The outer wrapper handles absolute positioning relative to the parent.
+  const wrapperStyle: React.CSSProperties = {
+    position: "absolute",
+    top: `${y}px`,
+    left: `${x}px`,
+  };
+
+  const Renderer =
+    componentRenderers[item.componentType] ||
+    (() => <div>Unknown Component</div>);
+
+  // Recursively render children if present.
   const children = containerMap[item.id]?.map((child) => (
-    <DroppedItemRenderer key={child.id} item={child} containerMap={containerMap} parent={item} />
+    <DroppedItemRenderer
+      key={child.id}
+      item={child}
+      containerMap={containerMap}
+      parent={item}
+    />
   ));
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: `${y}px`,
-        left: `${x}px`,
-      }}
-    >
+    <div style={wrapperStyle}>
       <Renderer item={item} containerMap={containerMap}>
         {children}
       </Renderer>
