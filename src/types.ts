@@ -35,4 +35,15 @@ export interface DroppedItem {
   opacity?: number;
   fontFamily?: string;
   backgroundColor?: string;
+
+  // NEW: Layout Mode Properties for Option B
+  layoutMode?: "absolute" | "flex" | "grid";
+  justifyContent?:
+    | "flex-start"
+    | "center"
+    | "flex-end"
+    | "space-between"
+    | "space-around";
+  alignItems?: "flex-start" | "center" | "flex-end" | "stretch";
+  columnSpan?: number; // Useful for grid layouts: number of desired columns.
 }

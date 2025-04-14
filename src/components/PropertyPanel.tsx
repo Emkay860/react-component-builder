@@ -70,6 +70,118 @@ export default function PropertyPanel({
         </div>
       </div>
 
+      {/* Layout Properties */}
+      <div className="mb-4">
+        <h3 className="text-md font-semibold mb-2">Layout</h3>
+        <div className="mb-4">
+          <label className="block text-sm font-medium">Layout Mode</label>
+          <select
+            value={selectedItem.layoutMode || "absolute"}
+            onChange={(e) =>
+              updateItem(selectedItem.id, {
+                layoutMode: e.target.value as "absolute" | "flex" | "grid",
+              })
+            }
+            className="mt-1 block w-full border border-gray-300 rounded p-2"
+          >
+            <option value="absolute" className="text-black">
+              Absolute
+            </option>
+            <option value="flex" className="text-black">
+              Flexbox
+            </option>
+            <option value="grid" className="text-black">
+              Grid
+            </option>
+          </select>
+        </div>
+        {selectedItem.layoutMode !== "absolute" && (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">
+                Justify Content
+              </label>
+              <select
+                value={selectedItem.justifyContent || "flex-start"}
+                onChange={(e) =>
+                  updateItem(selectedItem.id, {
+                    justifyContent: e.target.value as
+                      | "flex-start"
+                      | "center"
+                      | "flex-end"
+                      | "space-between"
+                      | "space-around",
+                  })
+                }
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+              >
+                <option value="flex-start" className="text-black">
+                  Flex Start
+                </option>
+                <option value="center" className="text-black">
+                  Center
+                </option>
+                <option value="flex-end" className="text-black">
+                  Flex End
+                </option>
+                <option value="space-between" className="text-black">
+                  Space Between
+                </option>
+                <option value="space-around" className="text-black">
+                  Space Around
+                </option>
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Align Items</label>
+              <select
+                value={selectedItem.alignItems || "flex-start"}
+                onChange={(e) =>
+                  updateItem(selectedItem.id, {
+                    alignItems: e.target.value as
+                      | "flex-start"
+                      | "center"
+                      | "flex-end"
+                      | "stretch",
+                  })
+                }
+                className="mt-1 block w-full border border-gray-300 rounded p-2"
+              >
+                <option value="flex-start" className="text-black">
+                  Flex Start
+                </option>
+                <option value="center" className="text-black">
+                  Center
+                </option>
+                <option value="flex-end" className="text-black">
+                  Flex End
+                </option>
+                <option value="stretch" className="text-black">
+                  Stretch
+                </option>
+              </select>
+            </div>
+            {selectedItem.layoutMode === "grid" && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium">
+                  Number of Columns
+                </label>
+                <input
+                  type="number"
+                  value={selectedItem.columnSpan || 1}
+                  onChange={(e) =>
+                    updateItem(selectedItem.id, {
+                      columnSpan: Number(e.target.value),
+                    })
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded p-2"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
       {/* Component-Specific properties */}
       {specificDefinitions.length > 0 && (
         <div className="mb-4">

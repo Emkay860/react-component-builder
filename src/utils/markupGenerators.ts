@@ -35,22 +35,61 @@ function mergeStyles(
 }
 
 /**
+ * Helper to get container structural styles based on the new layoutMode.
+ * - If layoutMode is "flex": returns a flex container style.
+ * - If layoutMode is "grid": returns a grid container style.
+ * - Otherwise (or if layoutMode is "absolute" or undefined): returns a default (relative/absolute) style.
+ */
+function getContainerStructuralStyles(item: DroppedItem): {
+  [key: string]: string | undefined;
+} {
+  if (item.layoutMode === "flex") {
+    return {
+      display: "flex",
+      justifyContent: item.justifyContent || "flex-start",
+      alignItems: item.alignItems || "flex-start",
+      gap: "10px",
+      padding: "16px",
+      borderRadius: item.borderRadius ? addPx(item.borderRadius) : undefined,
+      fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
+      width: item.width ? addPx(item.width) : "auto",
+      height: item.height ? addPx(item.height) : "auto",
+      backgroundColor: item.backgroundColor,
+    };
+  } else if (item.layoutMode === "grid") {
+    return {
+      display: "grid",
+      gridTemplateColumns: `repeat(${item.columnSpan || 1}, 1fr)`,
+      gap: "10px",
+      padding: "16px",
+      borderRadius: item.borderRadius ? addPx(item.borderRadius) : undefined,
+      fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
+      width: item.width ? addPx(item.width) : "auto",
+      height: item.height ? addPx(item.height) : "auto",
+      backgroundColor: item.backgroundColor,
+    };
+  } else {
+    // Default to absolute/relative positioning for containers.
+    return {
+      position: "relative",
+      borderRadius: item.borderRadius ? addPx(item.borderRadius) : undefined,
+      fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
+      width: item.width ? addPx(item.width) : "auto",
+      height: item.height ? addPx(item.height) : "auto",
+      backgroundColor: item.backgroundColor,
+    };
+  }
+}
+
+/**
  * Generate markup for a container element.
  */
 export function containerMarkup(
   item: DroppedItem,
   childrenMarkup: string
 ): string {
-  // Structural style properties (performing conversion using addPx where needed).
-  const structuralStyle: { [key: string]: string | undefined } = {
-    position: "relative",
-    borderRadius: item.borderRadius ? addPx(item.borderRadius) : undefined,
-    fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
-    width: item.width ? addPx(item.width) : "auto",
-    height: item.height ? addPx(item.height) : "auto",
-    // Use backgroundColor property (using item.backgroundColor if set, falling back to item.bgColor)
-    backgroundColor: item.backgroundColor,
-  };
+  // Use getContainerStructuralStyles to generate container styles based on layoutMode.
+  const structuralStyle = getContainerStructuralStyles(item);
 
   // Merge with common styles.
   const completeStyle = mergeStyles(structuralStyle, getCommonStyles(item));
@@ -69,6 +108,7 @@ export function containerMarkup(
  */
 export function elementMarkup(item: DroppedItem): string {
   let structuralStyle: { [key: string]: string | undefined } = {};
+
   switch (item.componentType) {
     case "card": {
       structuralStyle = {
@@ -76,14 +116,21 @@ export function elementMarkup(item: DroppedItem): string {
         fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
         width: item.width ? addPx(item.width) : "auto",
         height: item.height ? addPx(item.height) : "auto",
-        backgroundColor: item.backgroundColor || item.bgColor,
+        backgroundColor: item.backgroundColor,
       };
       {
-        const completeStyle = mergeStyles(
-          structuralStyle,
-          getCommonStyles(item)
-        );
         const tag = item.containerTag || "div";
+        // If a layoutMode is defined and not "absolute", use the container structural styles; otherwise, fall back to absolute positioning.
+        const styleObj =
+          item.layoutMode && item.layoutMode !== "absolute"
+            ? getContainerStructuralStyles(item)
+            : {
+                ...structuralStyle,
+                position: "absolute",
+                top: `${item.y}px`,
+                left: `${item.x}px`,
+              };
+        const completeStyle = mergeStyles(styleObj, getCommonStyles(item));
         return `<${tag} className="p-4 rounded shadow bg-gray-800 text-white" style={{ ${generateStyleString(
           completeStyle
         )} }}>
@@ -97,37 +144,70 @@ export function elementMarkup(item: DroppedItem): string {
         fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
         width: item.width ? addPx(item.width) : "auto",
         height: item.height ? addPx(item.height) : "auto",
-        backgroundColor: item.backgroundColor || item.bgColor,
+        backgroundColor: item.backgroundColor,
         color: item.textColor,
       };
-      const completeStyle = mergeStyles(structuralStyle, getCommonStyles(item));
-      return `<button className="bg-black text-white px-4 py-2 rounded" style={{ ${generateStyleString(
-        completeStyle
-      )} }}>
+      {
+        const styleObj =
+          item.layoutMode && item.layoutMode !== "absolute"
+            ? getContainerStructuralStyles(item)
+            : {
+                ...structuralStyle,
+                position: "absolute",
+                top: `${item.y}px`,
+                left: `${item.x}px`,
+              };
+        const completeStyle = mergeStyles(styleObj, getCommonStyles(item));
+        return `<button className="bg-black text-white px-4 py-2 rounded" style={{ ${generateStyleString(
+          completeStyle
+        )} }}>
   ${item.label !== undefined ? item.label : "Button"}
 </button>`;
+      }
     }
     case "text": {
       structuralStyle = {
         fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
         color: item.textColor,
       };
-      const completeStyle = mergeStyles(structuralStyle, getCommonStyles(item));
-      return `<p className="text-gray-400" style={{ ${generateStyleString(
-        completeStyle
-      )} }}>
+      {
+        const styleObj =
+          item.layoutMode && item.layoutMode !== "absolute"
+            ? getContainerStructuralStyles(item)
+            : {
+                ...structuralStyle,
+                position: "absolute",
+                top: `${item.y}px`,
+                left: `${item.x}px`,
+              };
+        const completeStyle = mergeStyles(styleObj, getCommonStyles(item));
+        return `<p className="text-gray-400" style={{ ${generateStyleString(
+          completeStyle
+        )} }}>
   ${item.label || "Text Element"}
 </p>`;
+      }
     }
     case "input": {
       structuralStyle = {
         borderColor: item.borderColor,
         fontSize: item.fontSize ? addPx(item.fontSize) : undefined,
       };
-      const completeStyle = mergeStyles(structuralStyle, getCommonStyles(item));
-      return `<input className="border rounded p-1" style={{ ${generateStyleString(
-        completeStyle
-      )} }} placeholder="Input Value" />`;
+      {
+        const styleObj =
+          item.layoutMode && item.layoutMode !== "absolute"
+            ? getContainerStructuralStyles(item)
+            : {
+                ...structuralStyle,
+                position: "absolute",
+                top: `${item.y}px`,
+                left: `${item.x}px`,
+              };
+        const completeStyle = mergeStyles(styleObj, getCommonStyles(item));
+        return `<input className="border rounded p-1" style={{ ${generateStyleString(
+          completeStyle
+        )} }} placeholder="Input Value" />`;
+      }
     }
     default:
       return `<div>Unknown Component</div>`;
