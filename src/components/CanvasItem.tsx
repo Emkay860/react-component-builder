@@ -66,6 +66,7 @@ export default function CanvasItem({
     boxShadow: item.boxShadow || undefined,
     opacity: item.opacity,
     fontFamily: item.fontFamily || undefined,
+    backgroundColor: item.backgroundColor,
   });
 
   // Compute dynamic styles based on component type, merging with common styles.
@@ -76,7 +77,7 @@ export default function CanvasItem({
     switch (item.componentType) {
       case "button":
         style = {
-          backgroundColor: item.bgColor,
+          // backgroundColor: item.bgColor,
           color: item.textColor,
           borderRadius:
             item.borderRadius !== undefined
@@ -91,7 +92,7 @@ export default function CanvasItem({
         break;
       case "card":
         style = {
-          backgroundColor: item.bgColor,
+          // backgroundColor: item.backgroundColor,
           borderRadius:
             item.borderRadius !== undefined
               ? `${item.borderRadius}px`

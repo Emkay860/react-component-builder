@@ -34,4 +34,5 @@ export interface DroppedItem {
   boxShadow?: string;
   opacity?: number;
   fontFamily?: string;
+  backgroundColor?: string;
 }
