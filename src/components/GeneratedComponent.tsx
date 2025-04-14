@@ -23,36 +23,6 @@ const sampleItems: DroppedItem[] = [
     width: 300,
     height: 200,
   },
-  {
-    id: "sample-button-1",
-    x: 150,
-    y: 150,
-    componentType: "button",
-    label: "Button",
-    bgColor: "#3B82F6",
-    textColor: "#fff",
-    borderRadius: 4,
-    fontSize: 14,
-    parentId: "sample-card-1",
-  },
-  {
-    id: "sample-text-1",
-    x: 50,
-    y: 250,
-    componentType: "text",
-    label: "Sample Text",
-    textColor: "#111827",
-    fontSize: 18,
-  },
-  {
-    id: "sample-input-1",
-    x: 50,
-    y: 300,
-    componentType: "input",
-    label: "Sample Input",
-    borderColor: "#D1D5DB",
-    fontSize: 16,
-  },
 ];
 
 const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
