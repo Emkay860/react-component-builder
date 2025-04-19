@@ -1,3 +1,5 @@
+//src/components/renderers/CardRenderer.tsx
+
 import { getCommonStyles } from "../../utils/commonStylesHelper";
 import { DroppedItemRendererProps } from "../DroppedItemRenderer";
 
@@ -22,4 +24,3 @@ export const CardRenderer: React.FC<DroppedItemRendererProps> = ({
     </div>
   );
 };
-

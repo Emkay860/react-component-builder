@@ -1,6 +1,6 @@
 // src/utils/generateComponentCode.ts
+import { pluginRegistry } from "../plugins/PluginRegistry";
 import type { DroppedItem } from "../types";
-import { containerMarkup, elementMarkup } from "./markupGenerators";
 import { addPx } from "./styleHelpers";
 
 export function generateComponentCode(items: DroppedItem[]): string {
@@ -18,28 +18,25 @@ export function generateComponentCode(items: DroppedItem[]): string {
 
   // Recursively generate the JSX for an item.
   const generateItemJSX = (item: DroppedItem, parent?: DroppedItem): string => {
-    // Compute relative positions.
     const posX = parent ? addPx(item.x - parent.x) : addPx(item.x);
     const posY = parent ? addPx(item.y - parent.y) : addPx(item.y);
+    const plugin = pluginRegistry.getPlugin(item.componentType);
+    if (!plugin) {
+      return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
+  <div>Unknown Component: ${item.componentType}</div>
+</div>`;
+    }
 
+    let childrenMarkup = "";
     if (containerMap[item.id]) {
-      const containerWidth = item.width ? addPx(item.width) : "auto";
-      const containerHeight = item.height ? addPx(item.height) : "auto";
-
-      let childrenMarkup = "";
       containerMap[item.id].forEach((child) => {
         childrenMarkup += generateItemJSX(child, item);
       });
-
-      const mergedMarkup = containerMarkup(item, childrenMarkup);
-      return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}', width: '${containerWidth}', height: '${containerHeight}' }}>
-  ${mergedMarkup}
-</div>`;
-    } else {
-      return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
-  ${elementMarkup(item)}
-</div>`;
     }
+    const markup = plugin.generateMarkup(item, childrenMarkup);
+    return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
+  ${markup}
+</div>`;
   };
 
   let code = `import React from 'react';

@@ -2,9 +2,9 @@
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import React, { useEffect, useRef } from "react";
+import { pluginRegistry } from "../plugins/PluginRegistry";
 import componentStyles from "../styles/componentStyles";
 import { DroppedItem } from "../types";
-import { getCommonStyles } from "../utils/commonStylesHelper";
 
 type Props = {
   item: DroppedItem;
@@ -39,13 +39,11 @@ export default function CanvasItem({
   useEffect(() => {
     const innerEl = innerRef.current;
     if (!innerEl) return;
-
     const handlePointerDown = () => {
       if (!isDragging && onSelect) {
         onSelect(item.id);
       }
     };
-
     innerEl.addEventListener("pointerdown", handlePointerDown, {
       capture: true,
     });
@@ -56,66 +54,7 @@ export default function CanvasItem({
     };
   }, [isDragging, onSelect, item.id]);
 
-
-  // Compute dynamic styles based on component type, merging with common styles.
-  const getDynamicStyle = (item: DroppedItem): React.CSSProperties => {
-    let style: React.CSSProperties = {};
-    const commonStyles = getCommonStyles(item);
-
-    switch (item.componentType) {
-      case "button":
-        style = {
-          // backgroundColor: item.bgColor,
-          color: item.textColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-          ...commonStyles,
-        };
-        break;
-      case "card":
-        style = {
-          // backgroundColor: item.backgroundColor,
-          borderRadius:
-            item.borderRadius !== undefined
-              ? `${item.borderRadius}px`
-              : undefined,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-          ...commonStyles,
-        };
-        break;
-      case "text":
-        style = {
-          color: item.textColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          ...commonStyles,
-        };
-        break;
-      case "input":
-        style = {
-          // borderColor: item.borderColor,
-          fontSize:
-            item.fontSize !== undefined ? `${item.fontSize}px` : undefined,
-          width: item.width ? `${item.width}px` : "auto",
-          height: item.height ? `${item.height}px` : "auto",
-          ...commonStyles,
-        };
-        break;
-      default:
-        style = { ...commonStyles };
-    }
-    return style;
-  };
-
+  // Base style for positioning.
   const baseStyle: React.CSSProperties = {
     position: "absolute",
     top: item.y,
@@ -127,58 +66,26 @@ export default function CanvasItem({
     cursor: isDragging ? "grabbing" : "grab",
   };
 
-  // Get styling classes from our componentStyles configuration.
+  // Look up the plugin based on componentType.
+  const plugin = pluginRegistry.getPlugin(item.componentType);
+
+  // Add some debug logging.
+  console.log("CanvasItem: componentType", item.componentType);
+  console.log("CanvasItem: plugin", plugin);
+
+  // If a plugin is found, use its Render component.
+  // Otherwise, for "card" type we fall back to our static rendering.
+  let renderedContent;
+  if (plugin) {
+    renderedContent = <plugin.Render item={item} />;
+  } else {
+    renderedContent = <div>Unknown Component</div>;
+  }
+
+  // Obtain styling classes from our componentStyles configuration.
   const styleConfig = componentStyles[item.componentType] || {
     container: "cursor-grab",
     element: "",
-  };
-
-  const containerClasses = styleConfig.container;
-  const elementClasses = styleConfig.element;
-
-  const renderContent = () => {
-    switch (item.componentType) {
-      case "button": {
-        const dynamicStyle = getDynamicStyle(item);
-        return (
-          <button className={elementClasses} style={dynamicStyle}>
-            {item.label || "Button"}
-          </button>
-        );
-      }
-      case "card": {
-        const dynamicStyle = getDynamicStyle(item);
-        return (
-          <div className={elementClasses} style={dynamicStyle}>
-            {item.label === undefined ? "Card Component" : item.label}
-          </div>
-        );
-      }
-      case "text": {
-        const dynamicStyle = getDynamicStyle(item);
-        return (
-          <p className={elementClasses} style={dynamicStyle}>
-            {item.label || "Text Element"}
-          </p>
-        );
-      }
-      case "input": {
-        const wrapperClasses = styleConfig.elementWrapper || "";
-        return (
-          <div className={wrapperClasses}>
-            <input
-              placeholder="Input Value"
-              className={elementClasses}
-              style={getDynamicStyle(item)}
-              onPointerDown={(e) => e.stopPropagation()}
-              onFocus={(e) => e.stopPropagation()}
-            />
-          </div>
-        );
-      }
-      default:
-        return <div>Unknown Component</div>;
-    }
   };
 
   return (
@@ -187,7 +94,7 @@ export default function CanvasItem({
       style={baseStyle}
       {...attributes}
       {...listeners}
-      className={`${containerClasses} ${
+      className={`${styleConfig.container} ${
         isSelected ? "ring-2 ring-blue-500" : ""
       }`}
       onContextMenu={(e) => {
@@ -195,9 +102,7 @@ export default function CanvasItem({
         if (onContextMenu) onContextMenu(e, item.id);
       }}
     >
-      {/* Main content */}
-      <div ref={innerRef}>{renderContent()}</div>
-
+      <div ref={innerRef}>{renderedContent}</div>
       {/* Render a full overlay for container items */}
       {item.isContainer && (
         <div

@@ -1,3 +1,4 @@
+// src/components/Canvas.tsx
 "use client";
 import { useDroppable } from "@dnd-kit/core";
 import React, { useState } from "react";
