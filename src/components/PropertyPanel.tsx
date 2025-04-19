@@ -4,6 +4,7 @@ import {
   componentProperties,
   PropertyField,
 } from "../config/componentProperties";
+import { pluginRegistry } from "../plugins/PluginRegistry";
 import { DroppedItem } from "../types";
 
 type PropertyPanelProps = {
@@ -24,9 +25,15 @@ export default function PropertyPanel({
     );
   }
 
-  // Get component-specific property definitions from our config.
-  const specificDefinitions: PropertyField[] =
+  // Look up static property definitions from our config…
+  const staticProps: PropertyField[] =
     componentProperties[selectedItem.componentType] || [];
+  // …and also check the plugin registry for dynamic property definitions
+  const pluginProps: PropertyField[] =
+    pluginRegistry.getPlugin(selectedItem.componentType)?.properties || [];
+  // Merge them, favoring the static definitions if any exist.
+  const specificDefinitions =
+    staticProps.length > 0 ? staticProps : pluginProps;
 
   return (
     <div className="w-64 p-4 border-l overflow-y-auto">

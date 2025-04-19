@@ -5,8 +5,8 @@ export type ComponentType =
   | "text"
   | "input"
   | "div"
-  | "section"
-  | "a";
+  | "image"
+  | "p";
 
 export interface DroppedItem {
   id: string;
@@ -25,6 +25,8 @@ export interface DroppedItem {
   isContainer?: boolean;
   containerTag?: string;
   parentId?: string; // Indicates the parent container's id.
+  src?: string;
+  alt?: string;
 
   // Additional common CSS properties.
   margin?: string;
