@@ -1,7 +1,7 @@
 // src/components/Canvas.tsx
 "use client";
 import { useDroppable } from "@dnd-kit/core";
-import React, { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
@@ -9,7 +9,7 @@ import { getDefaultMenuItems } from "./menus/menuItems";
 
 type Props = {
   items: DroppedItem[];
-  onSelect: (id: string, event?: React.MouseEvent) => void;
+  onSelect: (id: string, event?: MouseEvent) => void;
   selectedId: string | null;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -29,14 +29,14 @@ export default function Canvas({
     id: string;
   } | null>(null);
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
       onSelect("", e);
     }
     if (contextMenu) setContextMenu(null);
   };
 
-  const handleItemContextMenu = (e: React.MouseEvent, id: string) => {
+  const handleItemContextMenu = (e: MouseEvent, id: string) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, id });
     onSelect(id, e);
@@ -46,20 +46,23 @@ export default function Canvas({
     <div
       ref={setNodeRef}
       id="canvas-root"
-      className={`relative flex-1 m-4 border-2 rounded-lg ${
+      className={`relative flex-1 m-4 border-2 rounded-lg overflow-auto ${
         isOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"
       }`}
       onClick={handleCanvasClick}
     >
-      {items.map((item) => (
-        <CanvasItem
-          key={item.id}
-          item={item}
-          onSelect={onSelect}
-          isSelected={selectedId === item.id}
-          onContextMenu={handleItemContextMenu}
-        />
-      ))}
+      {/* Inner container simulating a large, "infinite" canvas */}
+      <div style={{ position: "relative", width: "3000px", height: "3000px" }}>
+        {items.map((item) => (
+          <CanvasItem
+            key={item.id}
+            item={item}
+            onSelect={onSelect}
+            isSelected={selectedId === item.id}
+            onContextMenu={handleItemContextMenu}
+          />
+        ))}
+      </div>
       {items.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-gray-500">
           Drop here
