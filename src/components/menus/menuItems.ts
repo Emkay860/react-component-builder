@@ -1,3 +1,4 @@
+//src/components/menus/menuItems.ts
 import type { MenuItem } from "./ContextMenu";
 
 export const getDefaultMenuItems = (

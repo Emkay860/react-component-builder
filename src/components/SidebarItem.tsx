@@ -1,5 +1,6 @@
-'use client'
-import { useDraggable } from '@dnd-kit/core';
+//SideBarItem.tsx
+"use client";
+import { useDraggable } from "@dnd-kit/core";
 
 interface SidebarItemProps {
   id: string;

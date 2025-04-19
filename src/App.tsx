@@ -1,3 +1,4 @@
+// src/App.tsx
 "use client";
 import {
   DndContext,
@@ -13,6 +14,9 @@ import PropertyPanel from "./components/PropertyPanel";
 import Sidebar from "./components/Sidebar";
 import GeneratedTestPage from "./pages/GeneratedTestPage";
 import { DroppedItem } from "./types";
+
+// Import the consolidated plugins, so all plugin registration code runs.
+import "./plugins"; // This automatically imports the index.ts from plugins/
 
 export default function App() {
   const [items, setItems] = useState<DroppedItem[]>([]);

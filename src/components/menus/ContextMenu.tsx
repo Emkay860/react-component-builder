@@ -1,3 +1,4 @@
+//src/components/menus/ContextMenu.tsx
 import React from "react";
 
 export interface MenuItem {
@@ -52,4 +53,3 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
 };
 
 export default ContextMenu;
-

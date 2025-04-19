@@ -1,3 +1,5 @@
+//src/components/renderers/TextRenderer.tsx
+
 import { getCommonStyles } from "../../utils/commonStylesHelper";
 import { DroppedItemRendererProps } from "../DroppedItemRenderer";
 

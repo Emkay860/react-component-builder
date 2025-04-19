@@ -1,7 +1,10 @@
+//src/components/renderers/ButtonRenderer.tsx
 import { getCommonStyles } from "../../utils/commonStylesHelper";
 import { DroppedItemRendererProps } from "../DroppedItemRenderer";
 
-export const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({ item }) => {
+export const ButtonRenderer: React.FC<DroppedItemRendererProps> = ({
+  item,
+}) => {
   return (
     <button
       className=""

@@ -1,4 +1,4 @@
-// src/PropertyPanel.tsx
+// src/components/PropertyPanel.tsx
 "use client";
 import {
   componentProperties,
