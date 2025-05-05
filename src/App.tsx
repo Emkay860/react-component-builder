@@ -16,7 +16,8 @@ import GeneratedTestPage from "./pages/GeneratedTestPage";
 import { DroppedItem } from "./types";
 
 // Import the consolidated plugins so their registration code runs.
-import "./plugins"; // This automatically imports the index.ts from plugins/
+import { useZoom } from "./context/ZoomContext";
+import "./plugins";
 
 export default function App() {
   const [items, setItems] = useState<DroppedItem[]>([]);
@@ -30,7 +31,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("editor");
   const [isDragging, setIsDragging] = useState(false);
   // State to store the current zoom scale (brought up from Canvas)
-  const [currentScale, setCurrentScale] = useState(1);
+  const { currentScale } = useZoom();
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
@@ -85,13 +86,9 @@ export default function App() {
       );
     } else if (active.data.current?.componentType) {
       const finalX =
-        startCoordinates.x +
-        delta.x / currentScale -
-        canvasRect.left;
+        startCoordinates.x + delta.x / currentScale - canvasRect.left;
       const finalY =
-        startCoordinates.y +
-        delta.y / currentScale -
-        canvasRect.top;
+        startCoordinates.y + delta.y / currentScale - canvasRect.top;
       const newItem: DroppedItem = {
         id: `canvas-${active.data.current.componentType}-${Date.now()}`,
         x: finalX,
@@ -113,14 +110,13 @@ export default function App() {
     setIsDragging(false);
   };
 
-  // Update an element's properties (from the Property Panel)
+  // Update element properties (from Property Panel)
   const updateItem = (id: string, newProps: Partial<DroppedItem>) => {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...newProps } : item))
     );
   };
 
-  // New deletion callback.
   const handleDelete = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
     if (selectedId === id) {
@@ -128,7 +124,6 @@ export default function App() {
     }
   };
 
-  // New duplicate callback.
   const handleDuplicate = (id: string) => {
     const item = items.find((it) => it.id === id);
     if (!item) return;
@@ -168,8 +163,8 @@ export default function App() {
             onDelete={handleDelete}
             onDuplicate={handleDuplicate}
             isDragging={isDragging}
-            currentScale={currentScale}
-            setCurrentScale={setCurrentScale}
+            // currentScale={currentScale}
+            // setCurrentScale={setCurrentScale}
           />
           <PropertyPanel
             selectedItem={items.find((item) => item.id === selectedId)}

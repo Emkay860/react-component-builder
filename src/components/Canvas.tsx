@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { MouseEvent, useRef, useState } from "react";
 import PanZoom, { PanZoomHandle } from "react-easy-panzoom";
+import { useZoom } from "../context/ZoomContext";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
@@ -15,8 +16,8 @@ type Props = {
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   isDragging: boolean;
-  currentScale: number;
-  setCurrentScale: React.Dispatch<React.SetStateAction<number>>;
+  // currentScale: number;
+  // setCurrentScale: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function Canvas({
@@ -26,8 +27,6 @@ export default function Canvas({
   onDelete,
   onDuplicate,
   isDragging,
-  currentScale,
-  setCurrentScale,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
   const [contextMenu, setContextMenu] = useState<{
@@ -35,6 +34,8 @@ export default function Canvas({
     y: number;
     id: string;
   } | null>(null);
+
+  const { currentScale, setCurrentScale } = useZoom();
 
   // Create a ref to call imperative methods from PanZoom.
   const panZoomRef = useRef<PanZoomHandle | null>(null);
@@ -105,7 +106,7 @@ export default function Canvas({
       >
         <div
           onMouseDown={handleInnerMouseDown}
-          style={{ position: "relative", width: "300px", height: "300px" }}
+          style={{ position: "relative", width: "3000px", height: "3000px" }}
         >
           {items.map((item) => (
             <CanvasItem
