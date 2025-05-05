@@ -11,6 +11,7 @@ type Props = {
   onSelect?: (id: string) => void;
   isSelected?: boolean;
   onContextMenu?: (e: React.MouseEvent, id: string) => void;
+  currentScale?: number; // New prop for the current zoom scale
 };
 
 export default function CanvasItem({
@@ -18,6 +19,7 @@ export default function CanvasItem({
   onSelect,
   isSelected,
   onContextMenu,
+  currentScale = 1, // default value of 1 if not provided
 }: Props) {
   // useDraggable for all items.
   const {
@@ -55,12 +57,15 @@ export default function CanvasItem({
   }, [isDragging, onSelect, item.id]);
 
   // Base style for positioning.
+  // Adjust transform by dividing the drag delta by the currentScale.
   const baseStyle: React.CSSProperties = {
     position: "absolute",
     top: item.y,
     left: item.x,
     transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px)`
+      ? `translate(${transform.x / currentScale}px, ${
+          transform.y / currentScale
+        }px)`
       : undefined,
     zIndex: item.zIndex || 1,
     cursor: isDragging ? "grabbing" : "grab",
@@ -70,11 +75,11 @@ export default function CanvasItem({
   const plugin = pluginRegistry.getPlugin(item.componentType);
 
   // Add some debug logging.
-  console.log("CanvasItem: componentType", item.componentType);
-  console.log("CanvasItem: plugin", plugin);
+  // console.log("CanvasItem: componentType", item.componentType);
+  // console.log("CanvasItem: plugin", plugin);
 
   // If a plugin is found, use its Render component.
-  // Otherwise, for "card" type we fall back to our static rendering.
+  // Otherwise, fall back to a default "Unknown Component" message.
   let renderedContent;
   if (plugin) {
     renderedContent = <plugin.Render item={item} />;
