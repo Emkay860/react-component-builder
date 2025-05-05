@@ -31,7 +31,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState("editor");
   const [isDragging, setIsDragging] = useState(false);
   // State to store the current zoom scale (brought up from Canvas)
-  const { currentScale } = useZoom();
+  const { currentScale, setCurrentScale } = useZoom();
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
@@ -136,12 +136,20 @@ export default function App() {
     setItems((prev) => [...prev, newItem]);
   };
 
+  // In your ZoomContext this may be used to initialize state,
+  // or you can update it through your existing ZoomContext provider.
+  // For example, on navigating back to the editor:
+  const handleEditorClick = () => {
+    setCurrentScale(1); // Reset currentScale before changing view.
+    setCurrentPage("editor");
+  };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex p-4 bg-gray-100 space-x-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={() => setCurrentPage("editor")}
+          onClick={handleEditorClick}
         >
           Editor
         </button>

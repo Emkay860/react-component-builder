@@ -1,16 +1,22 @@
 /* eslint-disable react-refresh/only-export-components */
 // src/context/ZoomContext.tsx
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, ReactNode, useContext } from "react";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 
 export type ZoomContextType = {
   currentScale: number;
-  setCurrentScale: React.Dispatch<React.SetStateAction<number>>;
+  setCurrentScale: (newVal: number) => void;
 };
 
 const ZoomContext = createContext<ZoomContextType | undefined>(undefined);
 
 export const ZoomProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentScale, setCurrentScale] = useState(1);
+  // Initialize the current scale using your custom hook so that it reads from localStorage.
+  const [currentScale, setCurrentScale] = useLocalStorage<number>(
+    "currentScale",
+    1
+  );
+
   return (
     <ZoomContext.Provider value={{ currentScale, setCurrentScale }}>
       {children}
