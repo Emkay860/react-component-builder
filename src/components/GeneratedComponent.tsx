@@ -46,7 +46,7 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
   return (
     <>
       <div
-        className="relative bg-gray-100 mx-auto"
+        className="relative bg-gray-100 mx-auto overflow-auto"
         style={{ height: "100vh", width: "90vw", overflow: "auto" }}
       >
         {topLevelItems.map((item) => (
@@ -58,9 +58,11 @@ const GeneratedComponent: React.FC<GeneratedComponentProps> = ({
         ))}
       </div>
       <div>
-        {/* <pre className="mt-8 bg-black p-4 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap"> */}
-        <CodeBlock language="javascript">{code}</CodeBlock>
-        {/* </pre> */}
+        <div className="w-[70%] mx-auto mt-20">
+          {/* <pre className="mt-8 bg-black p-4 rounded text-xs text-blue-300 font-mono whitespace-pre-wrap"> */}
+          <CodeBlock language="javascript">{code}</CodeBlock>
+          {/* </pre> */}
+        </div>
       </div>
     </>
   );
