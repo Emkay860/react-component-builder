@@ -23,6 +23,12 @@ function buildTree(items: DroppedItem[]) {
       roots.push(map[item.id]);
     }
   });
+  // Sort children of each node by x, then y
+  Object.values(map).forEach(node => {
+    node.children.sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
+  });
+  // Sort roots as well
+  roots.sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
   return roots;
 }
 

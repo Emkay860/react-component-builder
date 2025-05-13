@@ -23,12 +23,14 @@ export function generateComponentCode(items: DroppedItem[]): string {
     }
     let childrenMarkup = "";
     if (containerMap[item.id]) {
+      // Sort children by x, then y
+      const sortedChildren = [...containerMap[item.id]].sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
       if (item.isContainer) {
         childrenMarkup = `<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>` +
-          containerMap[item.id].map((child) => generateItemJSX(child)).join("") +
+          sortedChildren.map((child) => generateItemJSX(child)).join("") +
           `</div>`;
       } else {
-        childrenMarkup = containerMap[item.id].map((child) => generateItemJSX(child)).join("");
+        childrenMarkup = sortedChildren.map((child) => generateItemJSX(child)).join("");
       }
     }
     // Use containerMarkup for containers, elementMarkup for others
