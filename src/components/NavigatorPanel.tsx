@@ -31,8 +31,11 @@ const TreeNode: React.FC<{
   onSelect: (id: string) => void;
   selectedId: string | null;
   level?: number;
-}> = ({ node, onSelect, selectedId, level = 0 }) => {
+  collapsedMap?: Record<string, boolean>;
+  toggleCollapse?: (id: string) => void;
+}> = ({ node, onSelect, selectedId, level = 0, collapsedMap = {}, toggleCollapse = () => {} }) => {
   const isParent = node.children.length > 0;
+  const isCollapsed = collapsedMap[node.id] || false;
   return (
     <div className="text-black" style={{ marginLeft: level * 16, position: 'relative' }}>
       <div
@@ -41,9 +44,14 @@ const TreeNode: React.FC<{
         }`}
         onClick={() => onSelect(node.id)}
       >
-        {/* Caret for parent nodes */}
+        {/* Caret for parent nodes, clickable for collapse/expand */}
         {isParent && (
-          <span className="text-xs text-gray-500">▼</span>
+          <span
+            className="text-xs text-gray-500 select-none cursor-pointer"
+            onClick={e => { e.stopPropagation(); toggleCollapse(node.id); }}
+          >
+            {isCollapsed ? "▶" : "▼"}
+          </span>
         )}
         <span>{node.label || node.componentType}</span>
         {/* Badge for parent/child */}
@@ -54,13 +62,16 @@ const TreeNode: React.FC<{
           <span className="ml-1 px-1 text-xs bg-gray-100 text-gray-700 rounded">Child</span>
         )}
       </div>
-      {node.children.map((child) => (
+      {/* Render children only if not collapsed */}
+      {isParent && !isCollapsed && node.children.map((child) => (
         <TreeNode
           key={child.id}
           node={child as any}
           onSelect={onSelect}
           selectedId={selectedId}
           level={level + 1}
+          collapsedMap={collapsedMap}
+          toggleCollapse={toggleCollapse}
         />
       ))}
     </div>
@@ -69,6 +80,10 @@ const TreeNode: React.FC<{
 
 const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, selectedId }) => {
   const tree = buildTree(items);
+  const [collapsedMap, setCollapsedMap] = React.useState<Record<string, boolean>>({});
+  const toggleCollapse = (id: string) => {
+    setCollapsedMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
   return (
     <div className="w-64 p-4 border-l overflow-y-auto">
       <h2 className="text-lg font-bold mb-4">Navigator</h2>
@@ -81,6 +96,8 @@ const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, select
             node={node}
             onSelect={onSelect}
             selectedId={selectedId}
+            collapsedMap={collapsedMap}
+            toggleCollapse={toggleCollapse}
           />
         ))
       )}
