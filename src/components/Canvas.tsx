@@ -93,7 +93,7 @@ export default function Canvas({
         isOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"
       }`}
       onClick={handleCanvasClick}
-      style={{ touchAction: "none" }}
+      style={{ touchAction: "none", overflow: "hidden" }} // Hide scrollbars
     >
       <PanZoom
         ref={panZoomRef}
@@ -106,7 +106,7 @@ export default function Canvas({
       >
         <div
           onMouseDown={handleInnerMouseDown}
-          style={{ position: "relative", width: "3000px", height: "3000px" }}
+          style={{ position: "relative", width: "3000px", height: "3000px", overflow: "hidden" }} // Hide scrollbars
         >
           {items.map((item) => (
             <CanvasItem
