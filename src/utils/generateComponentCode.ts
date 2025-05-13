@@ -15,7 +15,8 @@ export function generateComponentCode(items: DroppedItem[]): string {
   // Find top-level items (no parentId)
   const topLevelItems = items.filter((item) => !item.parentId);
 
-  // Recursively generate the JSX for an item, using flex for children if parent is a container
+  // IMPORTANT: The isContainer property is set ONLY by the user via the Property Panel.
+  // Do NOT infer or mutate isContainer in code. It must reflect only user intent.
   const generateItemJSX = (item: DroppedItem): string => {
     const plugin = pluginRegistry.getPlugin(item.componentType);
     if (!plugin) {
@@ -41,10 +42,18 @@ export function generateComponentCode(items: DroppedItem[]): string {
     }
   };
 
-  let code = `import React from 'react';\n\nconst GeneratedComponent = () => {\n  return (\n    <div className=\"relative\" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>\n`;
-  topLevelItems.forEach((item) => {
-    code += generateItemJSX(item);
-  });
-  code += `  </div>\n)};\n\nexport default GeneratedComponent;\n`;
+  let code = `import React from 'react';\n\nconst GeneratedComponent = () => {\n  return (\n`;
+  if (topLevelItems.length === 1) {
+    // If there is a single root, render it directly (no extra wrapper)
+    code += generateItemJSX(topLevelItems[0]);
+  } else {
+    // Multiple roots: wrap in a flex container
+    code += `    <div className=\"relative\" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>\n`;
+    topLevelItems.forEach((item) => {
+      code += generateItemJSX(item);
+    });
+    code += `  </div>\n`;
+  }
+  code += `)};\n\nexport default GeneratedComponent;\n`;
   return code;
 }
