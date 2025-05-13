@@ -8,6 +8,9 @@ import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
 import { getDefaultMenuItems } from "./menus/menuItems";
+import GridBackground from "./GridBackground";
+import Rulers from "./Rulers";
+import CanvasControls from "./CanvasControls";
 
 type Props = {
   items: DroppedItem[];
@@ -16,8 +19,6 @@ type Props = {
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   isDragging: boolean;
-  // currentScale: number;
-  // setCurrentScale: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function Canvas({
@@ -37,8 +38,15 @@ export default function Canvas({
 
   const { currentScale, setCurrentScale } = useZoom();
 
-  // Create a ref to call imperative methods from PanZoom.
   const panZoomRef = useRef<PanZoomHandle | null>(null);
+
+  const [showGrid, setShowGrid] = useState(true);
+  const [showRulers, setShowRulers] = useState(true);
+  const gridSize = 40; // px
+  const canvasWidth = 3000;
+  const canvasHeight = 3000;
+
+  const [panZoomState, setPanZoomState] = useState({ scale: 1, translateX: 0, translateY: 0 });
 
   const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -53,14 +61,12 @@ export default function Canvas({
     onSelect(id, e);
   };
 
-  // Inner wrapper to stop propagation when dragging a selected item
   const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     if (isDragging) {
       e.stopPropagation();
     }
   };
 
-  // ----- UI Controls handlers -----
   const handleZoomIn = () => {
     if (panZoomRef.current && panZoomRef.current.zoomIn) {
       panZoomRef.current.zoomIn();
@@ -79,8 +85,6 @@ export default function Canvas({
     }
   };
 
-  // Here, 'Center' is implemented as a reset. If you need to center
-  // on a selected element, you can modify this function accordingly.
   const handleCenterCanvas = () => {
     handleReset();
   };
@@ -93,21 +97,35 @@ export default function Canvas({
         isOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"
       }`}
       onClick={handleCanvasClick}
-      style={{ touchAction: "none", overflow: "hidden" }} // Hide scrollbars
+      style={{ touchAction: "none", overflow: "hidden" }}
     >
+      <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
       <PanZoom
         ref={panZoomRef}
         onStateChange={(state) => {
-          // Update the current scale whenever state changes.
           setCurrentScale(state.scale);
+          setPanZoomState(state);
         }}
         minZoom={0.2}
         maxZoom={3}
       >
         <div
           onMouseDown={handleInnerMouseDown}
-          style={{ position: "relative", width: "3000px", height: "3000px", overflow: "hidden" }} // Hide scrollbars
+          style={{
+            position: "relative",
+            width: canvasWidth,
+            height: canvasHeight,
+            overflow: "hidden",
+            background: "#fff",
+          }}
         >
+          <GridBackground
+            show={showGrid}
+            gridSize={gridSize}
+            panZoomState={panZoomState}
+            width={canvasWidth}
+            height={canvasHeight}
+          />
           {items.map((item) => (
             <CanvasItem
               key={item.id}
@@ -120,73 +138,16 @@ export default function Canvas({
           ))}
         </div>
       </PanZoom>
-
-      {/* Overlay UI Controls */}
-      <div
-        style={{
-          position: "absolute",
-          top: 10,
-          right: 10,
-          zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-        }}
-      >
-        <button
-          onClick={handleZoomIn}
-          style={{
-            padding: "6px 10px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={handleZoomOut}
-          style={{
-            padding: "6px 10px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          –
-        </button>
-        <button
-          onClick={handleReset}
-          style={{
-            padding: "6px 10px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Reset
-        </button>
-        <button
-          onClick={handleCenterCanvas}
-          style={{
-            padding: "6px 10px",
-            backgroundColor: "#007bff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Center
-        </button>
-      </div>
-
+      <CanvasControls
+        showGrid={showGrid}
+        setShowGrid={setShowGrid}
+        showRulers={showRulers}
+        setShowRulers={setShowRulers}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onReset={handleReset}
+        onCenter={handleCenterCanvas}
+      />
       {items.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-gray-500">
           Drop here
