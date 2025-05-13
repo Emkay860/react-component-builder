@@ -13,7 +13,9 @@ import GhostOverlay from "./components/GhostOverlay";
 import PropertyPanel from "./components/PropertyPanel";
 import Sidebar from "./components/Sidebar";
 import GeneratedTestPage from "./pages/GeneratedTestPage";
+import NavigatorPanel from "./components/NavigatorPanel";
 import { DroppedItem } from "./types";
+import { Tabs, TabList, Tab, TabPanel } from "./components/Tabs";
 
 // Import the consolidated plugins so their registration code runs.
 import { useZoom } from "./context/ZoomContext";
@@ -78,11 +80,14 @@ export default function App() {
       const finalX = startCoordinates.x + delta.x / currentScale;
       const finalY = startCoordinates.y + delta.y / currentScale;
       setItems((prev) =>
-        prev.map((item) =>
-          item.id === String(active.id)
-            ? { ...item, x: finalX, y: finalY, parentId: parentId }
-            : item
-        )
+        prev.map((item) => {
+          if (item.id === String(active.id)) {
+            // Only update parentId if it actually changed (prevents accidental unparenting on click)
+            const newParentId = parentId !== undefined ? parentId : item.parentId;
+            return { ...item, x: finalX, y: finalY, parentId: newParentId };
+          }
+          return item;
+        })
       );
     } else if (active.data.current?.componentType) {
       const finalX =
@@ -103,6 +108,8 @@ export default function App() {
               : "Text Element"
             : undefined,
         parentId: parentId,
+        // Ensure isContainer is always explicitly set to false for new items unless otherwise specified
+        isContainer: false,
       };
       setItems((prev) => [...prev, newItem]);
     }
@@ -112,9 +119,19 @@ export default function App() {
 
   // Update element properties (from Property Panel)
   const updateItem = (id: string, newProps: Partial<DroppedItem>) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...newProps } : item))
-    );
+    console.log("[updateItem] id:", id, "newProps:", newProps);
+    setItems((prev) => {
+      const updated = prev.map((item) => {
+        if (item.id === id) {
+          const updatedItem = { ...item, ...newProps };
+          console.log("[updateItem] Updated item:", updatedItem);
+          return updatedItem;
+        }
+        return item;
+      });
+      console.log("[updateItem] All items after update:", updated);
+      return updated;
+    });
   };
 
   const handleDelete = (id: string) => {
@@ -128,7 +145,7 @@ export default function App() {
     const item = items.find((it) => it.id === id);
     if (!item) return;
     const newItem: DroppedItem = {
-      ...item,
+      ...item, // preserve all properties including isContainer
       id: `${item.id}-dup-${Date.now()}`,
       x: item.x + 10,
       y: item.y + 10,
@@ -171,13 +188,29 @@ export default function App() {
             onDelete={handleDelete}
             onDuplicate={handleDuplicate}
             isDragging={isDragging}
-            // currentScale={currentScale}
-            // setCurrentScale={setCurrentScale}
           />
-          <PropertyPanel
-            selectedItem={items.find((item) => item.id === selectedId)}
-            updateItem={updateItem}
-          />
+          {/* Right Panel with Tabs using reusable Tabs component */}
+          <div className="w-64 flex flex-col border-l bg-white">
+            <Tabs defaultTab="properties">
+              <TabList>
+                <Tab tab="properties">Properties</Tab>
+                <Tab tab="navigator">Navigator</Tab>
+              </TabList>
+              <TabPanel tab="properties">
+                <PropertyPanel
+                  selectedItem={items.find((item) => item.id === selectedId)}
+                  updateItem={updateItem}
+                />
+              </TabPanel>
+              <TabPanel tab="navigator">
+                <NavigatorPanel
+                  items={items}
+                  onSelect={setSelectedId}
+                  selectedId={selectedId}
+                />
+              </TabPanel>
+            </Tabs>
+          </div>
           <CodePreview items={items} />
         </div>
       )}

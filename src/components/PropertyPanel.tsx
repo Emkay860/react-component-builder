@@ -36,7 +36,7 @@ export default function PropertyPanel({
     staticProps.length > 0 ? staticProps : pluginProps;
 
   return (
-    <div className="w-64 p-4 border-l overflow-y-auto">
+    <div className="w-64 p-4 border-l overflow-y-auto text-black">
       <h2 className="text-lg font-bold mb-4">Properties</h2>
 
       {/* General properties (X, Y, and Z-Index) */}

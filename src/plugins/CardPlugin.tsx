@@ -64,7 +64,7 @@ const generateCardMarkup = (item: DroppedItem): string => {
   const styleString = generateStyleString(style);
 
   return `<div style={{ ${styleString} }}>
-  ${item.label || "Card Component"}
+  ${item.label}
 </div>`;
 };
 
