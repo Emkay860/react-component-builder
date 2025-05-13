@@ -13,7 +13,9 @@ import GhostOverlay from "./components/GhostOverlay";
 import PropertyPanel from "./components/PropertyPanel";
 import Sidebar from "./components/Sidebar";
 import GeneratedTestPage from "./pages/GeneratedTestPage";
+import NavigatorPanel from "./components/NavigatorPanel";
 import { DroppedItem } from "./types";
+import { Tabs, TabList, Tab, TabPanel } from "./components/Tabs";
 
 // Import the consolidated plugins so their registration code runs.
 import { useZoom } from "./context/ZoomContext";
@@ -171,13 +173,29 @@ export default function App() {
             onDelete={handleDelete}
             onDuplicate={handleDuplicate}
             isDragging={isDragging}
-            // currentScale={currentScale}
-            // setCurrentScale={setCurrentScale}
           />
-          <PropertyPanel
-            selectedItem={items.find((item) => item.id === selectedId)}
-            updateItem={updateItem}
-          />
+          {/* Right Panel with Tabs using reusable Tabs component */}
+          <div className="w-64 flex flex-col border-l bg-white">
+            <Tabs defaultTab="properties">
+              <TabList>
+                <Tab tab="properties">Properties</Tab>
+                <Tab tab="navigator">Navigator</Tab>
+              </TabList>
+              <TabPanel tab="properties">
+                <PropertyPanel
+                  selectedItem={items.find((item) => item.id === selectedId)}
+                  updateItem={updateItem}
+                />
+              </TabPanel>
+              <TabPanel tab="navigator">
+                <NavigatorPanel
+                  items={items}
+                  onSelect={setSelectedId}
+                  selectedId={selectedId}
+                />
+              </TabPanel>
+            </Tabs>
+          </div>
           <CodePreview items={items} />
         </div>
       )}
