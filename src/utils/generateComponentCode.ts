@@ -1,13 +1,10 @@
 // src/utils/generateComponentCode.ts
 import { pluginRegistry } from "../plugins/PluginRegistry";
 import type { DroppedItem } from "../types";
-import { addPx } from "./styleHelpers";
+import { containerMarkup, elementMarkup } from "./markupGenerators";
 
 export function generateComponentCode(items: DroppedItem[]): string {
-  // Separate top-level items (those with no parentId)
-  const topLevelItems = items.filter((item) => !item.parentId);
-
-  // Build a map of children keyed by parentId.
+  // Build a map of children keyed by parentId (same as Navigator)
   const containerMap: { [parentId: string]: DroppedItem[] } = {};
   items.forEach((item) => {
     if (item.parentId) {
@@ -15,43 +12,37 @@ export function generateComponentCode(items: DroppedItem[]): string {
       containerMap[item.parentId].push(item);
     }
   });
+  // Find top-level items (no parentId)
+  const topLevelItems = items.filter((item) => !item.parentId);
 
-  // Recursively generate the JSX for an item.
-  const generateItemJSX = (item: DroppedItem, parent?: DroppedItem): string => {
-    const posX = parent ? addPx(item.x - parent.x) : addPx(item.x);
-    const posY = parent ? addPx(item.y - parent.y) : addPx(item.y);
+  // Recursively generate the JSX for an item, using flex for children if parent is a container
+  const generateItemJSX = (item: DroppedItem): string => {
     const plugin = pluginRegistry.getPlugin(item.componentType);
     if (!plugin) {
-      return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
-  <div>Unknown Component: ${item.componentType}</div>
-</div>`;
+      return `<div><div>Unknown Component: ${item.componentType}</div></div>`;
     }
-
     let childrenMarkup = "";
     if (containerMap[item.id]) {
-      containerMap[item.id].forEach((child) => {
-        childrenMarkup += generateItemJSX(child, item);
-      });
+      if (item.isContainer) {
+        childrenMarkup = `<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>` +
+          containerMap[item.id].map((child) => generateItemJSX(child)).join("") +
+          `</div>`;
+      } else {
+        childrenMarkup = containerMap[item.id].map((child) => generateItemJSX(child)).join("");
+      }
     }
-    const markup = plugin.generateMarkup(item, childrenMarkup);
-    return `<div style={{ position: 'absolute', top: '${posY}', left: '${posX}' }}>
-  ${markup}
-</div>`;
+    // Use containerMarkup for containers, elementMarkup for others
+    if (item.isContainer) {
+      return containerMarkup(item, childrenMarkup);
+    } else {
+      return elementMarkup(item) + childrenMarkup;
+    }
   };
 
-  let code = `import React from 'react';
-
-const GeneratedComponent = () => {
-  return (
-    <div className="relative" style={{ width: '100%', height: '100%' }}>
-`;
+  let code = `import React from 'react';\n\nconst GeneratedComponent = () => {\n  return (\n    <div className=\"relative\" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>\n`;
   topLevelItems.forEach((item) => {
     code += generateItemJSX(item);
   });
-  code += `  </div>
-)};
-
-export default GeneratedComponent;
-`;
+  code += `  </div>\n)};\n\nexport default GeneratedComponent;\n`;
   return code;
 }
