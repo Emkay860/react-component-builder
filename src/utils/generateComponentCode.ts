@@ -24,15 +24,25 @@ export function generateComponentCode(items: DroppedItem[]): string {
     }
     let childrenMarkup = "";
     if (containerMap[item.id]) {
-      // Sort children by x, then y
-      const sortedChildren = [...containerMap[item.id]].sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
-      if (item.isContainer) {
-        childrenMarkup = `<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>` +
-          sortedChildren.map((child) => generateItemJSX(child)).join("") +
-          `</div>`;
-      } else {
-        childrenMarkup = sortedChildren.map((child) => generateItemJSX(child)).join("");
-      }
+      // Sort children by y, then x for vertical stacking
+      const sortedChildren = [...containerMap[item.id]].sort((a, b) => a.y - b.y || a.x - b.x);
+      childrenMarkup = sortedChildren
+        .map((child, idx) => {
+          // Calculate local position relative to parent
+          const localY = child.y - item.y;
+          const localX = child.x - item.x;
+          // marginTop is the difference in localY from the previous child (or from 0 for the first)
+          const prevLocalY = idx === 0 ? 0 : sortedChildren[idx - 1].y - item.y;
+          const marginTop = idx === 0 ? localY : localY - prevLocalY;
+          const marginLeft = localX;
+          // Output as string with px and round to 2 decimal places
+          const marginTopStr = `${marginTop.toFixed(2)}px`;
+          const marginLeftStr = `${marginLeft.toFixed(2)}px`;
+          return `<div style={{ marginTop: '${marginTopStr}', marginLeft: '${marginLeftStr}' }}>${generateItemJSX(child)}</div>`;
+        })
+        .join("");
+      // Wrap children in a flex column
+      childrenMarkup = `<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>${childrenMarkup}</div>`;
     }
     // Use containerMarkup for containers, elementMarkup for others
     if (item.isContainer) {
@@ -48,7 +58,7 @@ export function generateComponentCode(items: DroppedItem[]): string {
     code += generateItemJSX(topLevelItems[0]);
   } else {
     // Multiple roots: wrap in a flex container
-    code += `    <div className=\"relative\" style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '16px' }}>\n`;
+    code += `    <div className=\"relative\" style={{ width: '100%', height: '100%', position: 'relative' }}>\n`;
     topLevelItems.forEach((item) => {
       code += generateItemJSX(item);
     });
