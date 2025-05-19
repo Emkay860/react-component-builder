@@ -18,7 +18,7 @@ export default function PropertyPanel({
 }: PropertyPanelProps) {
   if (!selectedItem) {
     return (
-      <div className="w-64 p-4 border-l">
+      <div className="w-64 p-4 border-l text-black">
         <h2 className="text-lg font-bold mb-4">Properties</h2>
         <p>No element selected.</p>
       </div>
