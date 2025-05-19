@@ -9,50 +9,74 @@ interface NavigatorPanelProps {
   selectedIds: string[];
 }
 
-// Helper to build a tree structure from flat items
-function buildTree(items: DroppedItem[]) {
-  const map: Record<string, DroppedItem & { children: DroppedItem[] }> = {};
-  const roots: (DroppedItem & { children: DroppedItem[] })[] = [];
-  items.forEach((item) => {
-    map[item.id] = { ...item, children: [] };
-  });
-  items.forEach((item) => {
-    if (item.parentId && map[item.parentId]) {
-      map[item.parentId].children.push(map[item.id]);
+// Helper to build a tree structure with group nodes
+function buildTreeWithGroups(items: DroppedItem[]) {
+  // 1. Find all unique groupIds
+  const groupMap: Record<string, { id: string; alias?: string; children: DroppedItem[] }> = {};
+  const ungrouped: DroppedItem[] = [];
+  items.forEach(item => {
+    if (item.groupId) {
+      if (!groupMap[item.groupId]) {
+        groupMap[item.groupId] = {
+          id: item.groupId,
+          alias: item.groupAlias,
+          children: [],
+        };
+      }
+      groupMap[item.groupId].children.push(item);
+      // Optionally, sort children by x/y here
     } else {
-      roots.push(map[item.id]);
+      ungrouped.push(item);
     }
   });
-  // Sort children of each node by x, then y
-  Object.values(map).forEach(node => {
-    node.children.sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
-  });
-  // Sort roots as well
-  roots.sort((a, b) => (a.x !== b.x ? a.x - b.x : a.y - b.y));
-  return roots;
+  // 2. Build group nodes as virtual nodes
+  const groupNodes = Object.values(groupMap).map(group => ({
+    id: `group-${group.id}`,
+    label: group.alias || group.id,
+    isGroup: true,
+    groupId: group.id,
+    groupAlias: group.alias,
+    children: group.children,
+  }));
+  // 3. Return group nodes + ungrouped items as roots
+  return [...groupNodes, ...ungrouped.map(item => ({ ...item, children: [] }))];
 }
 
 const TreeNode: React.FC<{
-  node: DroppedItem & { children: DroppedItem[] };
+  node: any;
   onSelect: (id: string, event?: React.MouseEvent) => void;
   selectedIds: string[];
   level?: number;
   collapsedMap?: Record<string, boolean>;
   toggleCollapse?: (id: string) => void;
 }> = ({ node, onSelect, selectedIds, level = 0, collapsedMap = {}, toggleCollapse = () => {} }) => {
-  const isParent = node.children.length > 0;
+  const isGroup = node.isGroup;
+  const isParent = (node.children && node.children.length > 0);
   const isCollapsed = collapsedMap[node.id] || false;
   return (
     <div className="text-black" style={{ marginLeft: level * 16, position: 'relative' }}>
       <div
         className={`flex items-center px-2 py-1 rounded cursor-pointer gap-2 ${
-          selectedIds.includes(node.id) ? "bg-blue-200 text-blue-900" : "hover:bg-gray-200"
-        } ${node.groupId ? "ring-2 ring-purple-400" : ""}`}
-        onClick={(e) => {
-          if (e.button === 0) onSelect(node.id, e);
+          isGroup
+            ? "bg-purple-50 text-purple-900 border border-purple-200" // group node style
+            : selectedIds.includes(node.id)
+            ? "bg-blue-200 text-blue-900"
+            : "hover:bg-gray-200"
+        }`}
+        onClick={e => {
+          if (e.button === 0) {
+            if (isGroup) {
+              // Select all group members
+              if (node.children) {
+                node.children.forEach((child: DroppedItem) => onSelect(child.id, e));
+              }
+            } else {
+              onSelect(node.id, e);
+            }
+          }
         }}
       >
-        {/* Caret for parent nodes, clickable for collapse/expand */}
+        {/* Caret for parent/group nodes, clickable for collapse/expand */}
         {isParent && (
           <span
             className="text-xs text-gray-500 select-none cursor-pointer"
@@ -61,32 +85,37 @@ const TreeNode: React.FC<{
             {isCollapsed ? "▶" : "▼"}
           </span>
         )}
-        <span>{node.label || node.componentType}</span>
-        {(node.groupId || node.groupAlias) && (
-          <span
-            className="ml-2 px-1 text-xs bg-purple-100 text-purple-700 rounded border border-purple-300 max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap inline-block align-middle"
-            title={node.groupId}
-          >
+        <span
+          className={
+            isGroup
+              ? "font-bold max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap inline-block align-middle"
+              : ""
+          }
+          title={isGroup ? (node.label || node.groupId) : undefined}
+        >
+          {isGroup ? (node.label || node.groupId) : (node.label || node.componentType)}
+        </span>
+        {/* {isGroup && (
+          <span className="ml-2 px-1 text-xs bg-purple-100 text-purple-700 rounded border border-purple-300 max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap inline-block align-middle" title={node.groupId}>
             {node.groupAlias || node.groupId}
           </span>
+        )} */}
+        {/* Badge for parent/child/group */}
+        {isGroup && (
+          <span className="ml-1 px-1 text-xs bg-purple-200 text-purple-700 rounded">Group</span>
         )}
-        {/* Badge for parent/child */}
-        {isParent && (
+        {!isGroup && isParent && (
           <span className="ml-1 px-1 text-xs bg-blue-100 text-blue-700 rounded">Parent</span>
         )}
-        {level > 0 && !isParent && (
+        {!isGroup && level > 0 && !isParent && (
           <span className="ml-1 px-1 text-xs bg-gray-100 text-gray-700 rounded">Child</span>
-        )}
-        {/* Group indicator */}
-        {node.groupId && (
-          <span className="ml-1 px-1 text-xs bg-purple-200 text-purple-700 rounded">Group</span>
         )}
       </div>
       {/* Render children only if not collapsed */}
-      {isParent && !isCollapsed && node.children.map((child) => (
+      {isParent && !isCollapsed && node.children.map((child: any) => (
         <TreeNode
           key={child.id}
-          node={child as any}
+          node={child}
           onSelect={onSelect}
           selectedIds={selectedIds}
           level={level + 1}
@@ -99,7 +128,7 @@ const TreeNode: React.FC<{
 };
 
 const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, selectedIds }) => {
-  const tree = buildTree(items);
+  const tree = buildTreeWithGroups(items);
   const [collapsedMap, setCollapsedMap] = React.useState<Record<string, boolean>>({});
   const toggleCollapse = (id: string) => {
     setCollapsedMap((prev) => ({ ...prev, [id]: !prev[id] }));
