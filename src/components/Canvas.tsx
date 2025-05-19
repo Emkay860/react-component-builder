@@ -15,19 +15,19 @@ import CanvasControls from "./CanvasControls";
 type Props = {
   items: DroppedItem[];
   onSelect: (id: string, event?: MouseEvent) => void;
-  selectedId: string | null;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   isDragging: boolean;
+  selectedIds: string[];
 };
 
 export default function Canvas({
   items,
   onSelect,
-  selectedId,
   onDelete,
   onDuplicate,
   isDragging,
+  selectedIds,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
   const [contextMenu, setContextMenu] = useState<{
@@ -119,6 +119,7 @@ export default function Canvas({
             background: "#fff",
           }}
         >
+          {/* Grid overlay */}
           <GridBackground
             show={showGrid}
             gridSize={gridSize}
@@ -126,12 +127,13 @@ export default function Canvas({
             width={canvasWidth}
             height={canvasHeight}
           />
+          {/* Canvas items */}
           {items.map((item) => (
             <CanvasItem
               key={item.id}
               item={item}
               onSelect={onSelect}
-              isSelected={selectedId === item.id}
+              isSelected={selectedIds.includes(item.id)}
               onContextMenu={handleItemContextMenu}
               currentScale={currentScale}
             />

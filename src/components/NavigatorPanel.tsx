@@ -5,8 +5,8 @@ import type { DroppedItem } from "../types";
 
 interface NavigatorPanelProps {
   items: DroppedItem[];
-  onSelect: (id: string) => void;
-  selectedId: string | null;
+  onSelect: (id: string, event?: React.MouseEvent) => void;
+  selectedIds: string[];
 }
 
 // Helper to build a tree structure from flat items
@@ -34,21 +34,21 @@ function buildTree(items: DroppedItem[]) {
 
 const TreeNode: React.FC<{
   node: DroppedItem & { children: DroppedItem[] };
-  onSelect: (id: string) => void;
-  selectedId: string | null;
+  onSelect: (id: string, event?: React.MouseEvent) => void;
+  selectedIds: string[];
   level?: number;
   collapsedMap?: Record<string, boolean>;
   toggleCollapse?: (id: string) => void;
-}> = ({ node, onSelect, selectedId, level = 0, collapsedMap = {}, toggleCollapse = () => {} }) => {
+}> = ({ node, onSelect, selectedIds, level = 0, collapsedMap = {}, toggleCollapse = () => {} }) => {
   const isParent = node.children.length > 0;
   const isCollapsed = collapsedMap[node.id] || false;
   return (
     <div className="text-black" style={{ marginLeft: level * 16, position: 'relative' }}>
       <div
         className={`flex items-center px-2 py-1 rounded cursor-pointer gap-2 ${
-          selectedId === node.id ? "bg-blue-200 text-blue-900" : "hover:bg-gray-200"
+          selectedIds.includes(node.id) ? "bg-blue-200 text-blue-900" : "hover:bg-gray-200"
         }`}
-        onClick={() => onSelect(node.id)}
+        onClick={(e) => onSelect(node.id, e)}
       >
         {/* Caret for parent nodes, clickable for collapse/expand */}
         {isParent && (
@@ -74,7 +74,7 @@ const TreeNode: React.FC<{
           key={child.id}
           node={child as any}
           onSelect={onSelect}
-          selectedId={selectedId}
+          selectedIds={selectedIds}
           level={level + 1}
           collapsedMap={collapsedMap}
           toggleCollapse={toggleCollapse}
@@ -84,7 +84,7 @@ const TreeNode: React.FC<{
   );
 };
 
-const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, selectedId }) => {
+const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, selectedIds }) => {
   const tree = buildTree(items);
   const [collapsedMap, setCollapsedMap] = React.useState<Record<string, boolean>>({});
   const toggleCollapse = (id: string) => {
@@ -101,7 +101,7 @@ const NavigatorPanel: React.FC<NavigatorPanelProps> = ({ items, onSelect, select
             key={node.id}
             node={node}
             onSelect={onSelect}
-            selectedId={selectedId}
+            selectedIds={selectedIds}
             collapsedMap={collapsedMap}
             toggleCollapse={toggleCollapse}
           />

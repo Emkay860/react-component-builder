@@ -1,14 +1,14 @@
 // src/components/CanvasItem.tsx
 "use client";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { pluginRegistry } from "../plugins/PluginRegistry";
 import componentStyles from "../styles/componentStyles";
 import { DroppedItem } from "../types";
 
 type Props = {
   item: DroppedItem;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string, e: React.MouseEvent) => void; // Updated to include MouseEvent
   isSelected?: boolean;
   onContextMenu?: (e: React.MouseEvent, id: string) => void;
   currentScale?: number; // New prop for the current zoom scale
@@ -37,13 +37,18 @@ export default function CanvasItem({
 
   const innerRef = useRef<HTMLDivElement>(null);
 
-  // Attach a native pointerdown listener to guarantee selection.
-  useEffect(() => {
+  // Attach a native pointerdown listener to guarantee selection and multi-select
+  React.useEffect(() => {
     const innerEl = innerRef.current;
     if (!innerEl) return;
-    const handlePointerDown = () => {
+    const handlePointerDown = (e: PointerEvent) => {
       if (!isDragging && onSelect) {
-        onSelect(item.id);
+        // Convert native PointerEvent to React.MouseEvent-like object for compatibility
+        // Only pass the event if it has ctrlKey/metaKey or is a left click
+        if (e.button === 0) {
+          // @ts-ignore
+          onSelect(item.id, e);
+        }
       }
     };
     innerEl.addEventListener("pointerdown", handlePointerDown, {
@@ -118,7 +123,7 @@ export default function CanvasItem({
             left: 0,
             width: "100%",
             height: "100%",
-             pointerEvents: "none",
+            pointerEvents: "none",
           }}
         />
       )}

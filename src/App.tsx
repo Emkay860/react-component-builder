@@ -6,7 +6,7 @@ import {
   DragOverlay,
   DragStartEvent,
 } from "@dnd-kit/core";
-import { useState } from "react";
+import React, { useState } from "react";
 import Canvas from "./components/Canvas";
 import CodePreview from "./components/CodePreview";
 import GhostOverlay from "./components/GhostOverlay";
@@ -29,7 +29,7 @@ export default function App() {
   } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState("editor");
   const [isDragging, setIsDragging] = useState(false);
   // State to store the current zoom scale (brought up from Canvas)
@@ -76,7 +76,7 @@ export default function App() {
         : undefined;
 
     if (isExistingItem) {
-      // Adjust the delta by dividing by the currentScale.
+      // Adjust the delta by dividing to currentScale.
       const finalX = startCoordinates.x + delta.x / currentScale;
       const finalY = startCoordinates.y + delta.y / currentScale;
       setItems((prev) =>
@@ -136,8 +136,8 @@ export default function App() {
 
   const handleDelete = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
-    if (selectedId === id) {
-      setSelectedId(null);
+    if (selectedIds.includes(id)) {
+      setSelectedIds((prev) => prev.filter((sid) => sid !== id));
     }
   };
 
@@ -159,6 +159,17 @@ export default function App() {
   const handleEditorClick = () => {
     setCurrentScale(1); // Reset currentScale before changing view.
     setCurrentPage("editor");
+  };
+
+  // Multi-select aware select handler
+  const handleSelect = (id: string, event?: MouseEvent | React.MouseEvent) => {
+    if (event && (event.ctrlKey || event.metaKey)) {
+      setSelectedIds((prev) =>
+        prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+      );
+    } else {
+      setSelectedIds(id ? [id] : []);
+    }
   };
 
   return (
@@ -183,11 +194,11 @@ export default function App() {
           <Sidebar />
           <Canvas
             items={items}
-            onSelect={setSelectedId}
-            selectedId={selectedId}
+            onSelect={handleSelect}
             onDelete={handleDelete}
             onDuplicate={handleDuplicate}
             isDragging={isDragging}
+            selectedIds={selectedIds}
           />
           {/* Right Panel with Tabs using reusable Tabs component */}
           <div className="w-64 flex flex-col border-l bg-white">
@@ -198,15 +209,15 @@ export default function App() {
               </TabList>
               <TabPanel tab="properties">
                 <PropertyPanel
-                  selectedItem={items.find((item) => item.id === selectedId)}
+                  selectedItem={items.find((item) => item.id === selectedIds[0])}
                   updateItem={updateItem}
                 />
               </TabPanel>
               <TabPanel tab="navigator">
                 <NavigatorPanel
                   items={items}
-                  onSelect={setSelectedId}
-                  selectedId={selectedId}
+                  onSelect={handleSelect}
+                  selectedIds={selectedIds}
                 />
               </TabPanel>
             </Tabs>
