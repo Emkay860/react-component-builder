@@ -40,4 +40,11 @@ export interface DroppedItem {
 
   groupId?: string; // Optional group identifier for grouping
   groupAlias?: string; // Optional alias for group display
+
+  // New properties for plugin support
+  disabled?: boolean;
+  placeholder?: string;
+  fontWeight?: string;
+  border?: string;
+  color?: string;
 }

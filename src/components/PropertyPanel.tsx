@@ -1,9 +1,5 @@
 // src/components/PropertyPanel.tsx
 "use client";
-import {
-  componentProperties,
-  PropertyField,
-} from "../config/componentProperties";
 import { pluginRegistry } from "../plugins/PluginRegistry";
 import { DroppedItem } from "../types";
 
@@ -27,15 +23,9 @@ export default function PropertyPanel({
     );
   }
 
-  // Look up static property definitions from our config…
-  const staticProps: PropertyField[] =
-    componentProperties[selectedItem.componentType] || [];
-  // …and also check the plugin registry for dynamic property definitions
-  const pluginProps: PropertyField[] =
-    pluginRegistry.getPlugin(selectedItem.componentType)?.properties || [];
-  // Merge them, favoring the static definitions if any exist.
-  const specificDefinitions =
-    staticProps.length > 0 ? staticProps : pluginProps;
+  // Get property fields from the plugin registry for the selected component type
+  const plugin = pluginRegistry.getPlugin(selectedItem.componentType);
+  const propertyFields = plugin?.properties || [];
 
   return (
     <div className="w-64 p-4 border-l overflow-y-auto text-black">
@@ -106,11 +96,11 @@ export default function PropertyPanel({
         )}
       </div>
 
-      {/* Component-Specific properties */}
-      {specificDefinitions.length > 0 && (
+      {/* Render plugin/component-specific and common properties */}
+      {propertyFields.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-md font-semibold mb-2">Component Specific</h3>
-          {specificDefinitions.map((field) => (
+          <h3 className="text-md font-semibold mb-2">Component Properties</h3>
+          {propertyFields.map((field) => (
             <div key={field.property as string} className="mb-4">
               <label className="block text-sm font-medium">{field.label}</label>
               {field.type === "text" && (

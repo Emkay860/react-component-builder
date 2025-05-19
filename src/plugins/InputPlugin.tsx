@@ -1,6 +1,6 @@
 // src/plugins/InputPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { addPx, generateStyleString } from "../utils/styleHelpers";
@@ -60,15 +60,25 @@ const generateInputMarkup = (item: DroppedItem): string => {
 
 // Define property fields for the Input element.
 const inputProperties: PropertyField[] = [
-  { label: "Placeholder", property: "label", type: "text", defaultValue: "Input Value" },
-  { label: "Width", property: "width", type: "number", defaultValue: 200 },
-  { label: "Height", property: "height", type: "number", defaultValue: 40 },
+  { label: "Label", property: "label", type: "text", defaultValue: "Input Value" },
+  { label: "Placeholder", property: "placeholder", type: "text", defaultValue: "Enter text" },
+  { label: "Disabled", property: "disabled", type: "boolean", defaultValue: false },
+  { label: "Font Size", property: "fontSize", type: "number", defaultValue: 16 },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: false },
+];
+
+// Merge with commonCssProperties, avoiding duplicates
+const mergedInputProperties: PropertyField[] = [
+  ...inputProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !inputProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const InputPlugin: ComponentPlugin = {
   type: "input",
   name: "Input",
-  properties: inputProperties,
+  properties: mergedInputProperties,
   Render: InputRender,
   generateMarkup: generateInputMarkup,
 };

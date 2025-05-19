@@ -1,6 +1,6 @@
 // src/plugins/DivPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { generateStyleString } from "../utils/styleHelpers";
@@ -10,13 +10,12 @@ import { pluginRegistry } from "./PluginRegistry";
 // The render component for a basic <div>.
 const DivRender: React.FC<React.PropsWithChildren<{ item: DroppedItem }>> = ({ item, children }) => {
   const style = {
-    width: item.width ? `${item.width}px` : "auto",
-    height: item.height ? `${item.height}px` : "auto",
+    // width: item.width ? `${item.width}px` : "auto",
+    // height: item.height ? `${item.height}px` : "auto",
     ...getCommonStyles(item),
   };
   return (
-    <div style={style}>
-      {item.label !== undefined ? item.label : "Div Content"}
+    <div className="border border-black w-[100px] h-[50px]" style={style}>
       {children}
     </div>
   );
@@ -31,22 +30,28 @@ const generateDivMarkup = (item: DroppedItem, childrenMarkup: string = ""): stri
   };
   const styleString = generateStyleString(style);
   return `<div style={{ ${styleString} }}>
-  ${item.label !== undefined ? item.label : "Div Content"}
   ${childrenMarkup}
 </div>`;
 };
 
 // Define property fields for the Div element.
 const divProperties: PropertyField[] = [
-  { label: "Content", property: "label", type: "text", defaultValue: "Div Content" },
-  { label: "Width", property: "width", type: "number", defaultValue: 300 },
-  { label: "Height", property: "height", type: "number", defaultValue: 200 },
+  { label: "Label", property: "label", type: "text", defaultValue: "Div Content" },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: true },
+];
+
+// Merge with commonCssProperties, avoiding duplicates
+const mergedDivProperties: PropertyField[] = [
+  ...divProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !divProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const DivPlugin: ComponentPlugin = {
   type: "div",
   name: "Div",
-  properties: divProperties,
+  properties: mergedDivProperties,
   Render: DivRender,
   generateMarkup: generateDivMarkup,
 };

@@ -1,6 +1,6 @@
 // src/plugins/CardPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { addPx, generateStyleString } from "../utils/styleHelpers";
@@ -69,18 +69,21 @@ const generateCardMarkup = (item: DroppedItem): string => {
 };
 
 const cardProperties: PropertyField[] = [
-  { label: "Title", property: "label", type: "text", defaultValue: "Card Component" },
-  { label: "Border Radius", property: "borderRadius", type: "number", defaultValue: 8 },
-  { label: "Font Size", property: "fontSize", type: "number", defaultValue: 16 },
-  { label: "Width", property: "width", type: "number", defaultValue: 300 },
-  { label: "Height", property: "height", type: "number", defaultValue: 200 },
-  { label: "Container", property: "isContainer", type: "boolean", defaultValue: false },
+  { label: "Label", property: "label", type: "text", defaultValue: "Card Title" },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: true },
+];
+
+const mergedCardProperties: PropertyField[] = [
+  ...cardProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !cardProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const CardPlugin: ComponentPlugin = {
   type: "card",
   name: "Card",
-  properties: cardProperties,
+  properties: mergedCardProperties,
   Render: CardRender,
   generateMarkup: generateCardMarkup,
 };
