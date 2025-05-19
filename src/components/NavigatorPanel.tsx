@@ -62,6 +62,14 @@ const TreeNode: React.FC<{
           </span>
         )}
         <span>{node.label || node.componentType}</span>
+        {(node.groupId || node.groupAlias) && (
+          <span
+            className="ml-2 px-1 text-xs bg-purple-100 text-purple-700 rounded border border-purple-300 max-w-[100px] overflow-hidden text-ellipsis whitespace-nowrap inline-block align-middle"
+            title={node.groupId}
+          >
+            {node.groupAlias || node.groupId}
+          </span>
+        )}
         {/* Badge for parent/child */}
         {isParent && (
           <span className="ml-1 px-1 text-xs bg-blue-100 text-blue-700 rounded">Parent</span>

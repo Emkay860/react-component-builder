@@ -10,11 +10,13 @@ import { DroppedItem } from "../types";
 type PropertyPanelProps = {
   selectedItem?: DroppedItem;
   updateItem: (id: string, newProps: Partial<DroppedItem>) => void;
+  onRenameGroupAlias?: (groupId: string, alias: string) => void;
 };
 
 export default function PropertyPanel({
   selectedItem,
   updateItem,
+  onRenameGroupAlias,
 }: PropertyPanelProps) {
   if (!selectedItem) {
     return (
@@ -68,13 +70,40 @@ export default function PropertyPanel({
           <label className="block text-sm font-medium">Z-Index</label>
           <input
             type="number"
-            value={selectedItem.zIndex !== undefined ? selectedItem.zIndex : 1}
+            value={selectedItem.zIndex ?? 1}
             onChange={(e) =>
               updateItem(selectedItem.id, { zIndex: Number(e.target.value) })
             }
             className="mt-1 block w-full border border-gray-300 rounded p-2"
           />
         </div>
+        {selectedItem.groupId && (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Group Alias</label>
+              <input
+                type="text"
+                value={selectedItem.groupAlias ?? ""}
+                onChange={(e) => {
+                  if (onRenameGroupAlias) {
+                    onRenameGroupAlias(selectedItem.groupId!, e.target.value);
+                  }
+                }}
+                placeholder="(Optional)"
+                className="mt-1 block w-full border border-gray-300 rounded p-2 bg-white text-gray-900"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">Group ID</label>
+              <input
+                type="text"
+                value={selectedItem.groupId}
+                readOnly
+                className="mt-1 block w-full border border-gray-300 rounded p-2 bg-gray-100 text-gray-700 cursor-not-allowed"
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Component-Specific properties */}

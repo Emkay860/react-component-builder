@@ -207,6 +207,15 @@ export default function App() {
     );
   };
 
+  // Handler to set groupAlias for all items in a group
+  const handleRenameGroupAlias = (groupId: string, alias: string) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.groupId === groupId ? { ...item, groupAlias: alias || undefined } : item
+      )
+    );
+  };
+
   // Multi-select aware select handler (group-aware)
   const handleSelect = (id: string, event?: MouseEvent | React.MouseEvent) => {
     const item = items.find((it) => it.id === id);
@@ -288,6 +297,7 @@ export default function App() {
                 <PropertyPanel
                   selectedItem={items.find((item) => item.id === selectedIds[0])}
                   updateItem={updateItem}
+                  onRenameGroupAlias={handleRenameGroupAlias}
                 />
               </TabPanel>
               <TabPanel tab="navigator">
