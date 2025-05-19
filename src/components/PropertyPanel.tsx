@@ -22,7 +22,7 @@ export default function PropertyPanel({
     return (
       <div className="w-64 p-4 border-l text-black">
         <h2 className="text-lg font-bold mb-4">Properties</h2>
-        <p>No element selected.</p>
+        <p className="text-gray-500">No element selected.</p>
       </div>
     );
   }
