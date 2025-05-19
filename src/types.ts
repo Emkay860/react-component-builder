@@ -37,4 +37,6 @@ export interface DroppedItem {
   opacity?: number;
   fontFamily?: string;
   backgroundColor?: string;
+
+  groupId?: string; // Optional group identifier for grouping
 }

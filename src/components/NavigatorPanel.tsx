@@ -47,8 +47,10 @@ const TreeNode: React.FC<{
       <div
         className={`flex items-center px-2 py-1 rounded cursor-pointer gap-2 ${
           selectedIds.includes(node.id) ? "bg-blue-200 text-blue-900" : "hover:bg-gray-200"
-        }`}
-        onClick={(e) => onSelect(node.id, e)}
+        } ${node.groupId ? "ring-2 ring-purple-400" : ""}`}
+        onClick={(e) => {
+          if (e.button === 0) onSelect(node.id, e);
+        }}
       >
         {/* Caret for parent nodes, clickable for collapse/expand */}
         {isParent && (
@@ -66,6 +68,10 @@ const TreeNode: React.FC<{
         )}
         {level > 0 && !isParent && (
           <span className="ml-1 px-1 text-xs bg-gray-100 text-gray-700 rounded">Child</span>
+        )}
+        {/* Group indicator */}
+        {node.groupId && (
+          <span className="ml-1 px-1 text-xs bg-purple-200 text-purple-700 rounded">Group</span>
         )}
       </div>
       {/* Render children only if not collapsed */}

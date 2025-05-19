@@ -12,6 +12,7 @@ type Props = {
   isSelected?: boolean;
   onContextMenu?: (e: React.MouseEvent, id: string) => void;
   currentScale?: number; // New prop for the current zoom scale
+  groupId?: string;
 };
 
 export default function CanvasItem({
@@ -20,6 +21,7 @@ export default function CanvasItem({
   isSelected,
   onContextMenu,
   currentScale = 1, // default value of 1 if not provided
+  groupId,
 }: Props) {
   // useDraggable for all items.
   const {
@@ -43,8 +45,7 @@ export default function CanvasItem({
     if (!innerEl) return;
     const handlePointerDown = (e: PointerEvent) => {
       if (!isDragging && onSelect) {
-        // Convert native PointerEvent to React.MouseEvent-like object for compatibility
-        // Only pass the event if it has ctrlKey/metaKey or is a left click
+        // Only select on left click (button === 0)
         if (e.button === 0) {
           // @ts-ignore
           onSelect(item.id, e);
@@ -106,7 +107,7 @@ export default function CanvasItem({
       {...listeners}
       className={`${styleConfig.container} ${
         isSelected ? "ring-2 ring-blue-500" : ""
-      }`}
+      } ${groupId ? "ring-2 ring-purple-400" : ""}`}
       onContextMenu={(e) => {
         e.preventDefault();
         if (onContextMenu) onContextMenu(e, item.id);

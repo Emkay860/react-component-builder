@@ -16,6 +16,7 @@ import GeneratedTestPage from "./pages/GeneratedTestPage";
 import NavigatorPanel from "./components/NavigatorPanel";
 import { DroppedItem } from "./types";
 import { Tabs, TabList, Tab, TabPanel } from "./components/Tabs";
+import { v4 as uuidv4 } from "uuid";
 
 // Import the consolidated plugins so their registration code runs.
 import { useZoom } from "./context/ZoomContext";
@@ -79,16 +80,43 @@ export default function App() {
       // Adjust the delta by dividing to currentScale.
       const finalX = startCoordinates.x + delta.x / currentScale;
       const finalY = startCoordinates.y + delta.y / currentScale;
-      setItems((prev) =>
-        prev.map((item) => {
-          if (item.id === String(active.id)) {
-            // Only update parentId if it actually changed (prevents accidental unparenting on click)
-            const newParentId = parentId !== undefined ? parentId : item.parentId;
-            return { ...item, x: finalX, y: finalY, parentId: newParentId };
-          }
-          return item;
-        })
-      );
+      // Find the dragged item
+      const draggedItem = items.find((item) => item.id === String(active.id));
+      if (draggedItem && draggedItem.groupId) {
+        // Move all group members by the same delta
+        setItems((prev) =>
+          prev.map((item) => {
+            if (item.groupId === draggedItem.groupId) {
+              // Move by the same delta as the dragged item
+              const dx = finalX - draggedItem.x;
+              const dy = finalY - draggedItem.y;
+              // Only update parentId for the dragged item
+              const newParentId =
+                item.id === draggedItem.id && parentId !== undefined
+                  ? parentId
+                  : item.parentId;
+              return {
+                ...item,
+                x: item.x + dx,
+                y: item.y + dy,
+                parentId: newParentId,
+              };
+            }
+            return item;
+          })
+        );
+      } else {
+        setItems((prev) =>
+          prev.map((item) => {
+            if (item.id === String(active.id)) {
+              // Only update parentId if it actually changed (prevents accidental unparenting on click)
+              const newParentId = parentId !== undefined ? parentId : item.parentId;
+              return { ...item, x: finalX, y: finalY, parentId: newParentId };
+            }
+            return item;
+          })
+        );
+      }
     } else if (active.data.current?.componentType) {
       const finalX =
         startCoordinates.x + delta.x / currentScale - canvasRect.left;
@@ -161,8 +189,35 @@ export default function App() {
     setCurrentPage("editor");
   };
 
-  // Multi-select aware select handler
+  // Group/Ungroup logic
+  const handleGroup = () => {
+    if (selectedIds.length < 2) return;
+    const groupId = uuidv4();
+    setItems((prev) =>
+      prev.map((item) =>
+        selectedIds.includes(item.id) ? { ...item, groupId } : item
+      )
+    );
+  };
+  const handleUngroup = () => {
+    setItems((prev) =>
+      prev.map((item) =>
+        selectedIds.includes(item.id) ? { ...item, groupId: undefined } : item
+      )
+    );
+  };
+
+  // Multi-select aware select handler (group-aware)
   const handleSelect = (id: string, event?: MouseEvent | React.MouseEvent) => {
+    const item = items.find((it) => it.id === id);
+    if (item?.groupId) {
+      // If part of a group, select all group members
+      const groupMembers = items
+        .filter((it) => it.groupId === item.groupId)
+        .map((it) => it.id);
+      setSelectedIds(groupMembers);
+      return;
+    }
     if (event && (event.ctrlKey || event.metaKey)) {
       setSelectedIds((prev) =>
         prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
@@ -187,6 +242,26 @@ export default function App() {
         >
           Preview
         </button>
+        {/* Group/Ungroup controls */}
+        <button
+          className="px-4 py-2 bg-purple-500 text-white rounded"
+          onClick={handleGroup}
+          disabled={selectedIds.length < 2}
+        >
+          Group
+        </button>
+        <button
+          className="px-4 py-2 bg-yellow-500 text-black rounded"
+          onClick={handleUngroup}
+          disabled={
+            selectedIds.length === 0 ||
+            !selectedIds.some((id) =>
+              items.find((it) => it.id === id && it.groupId)
+            )
+          }
+        >
+          Ungroup
+        </button>
       </div>
 
       {currentPage === "editor" && (
@@ -199,6 +274,8 @@ export default function App() {
             onDuplicate={handleDuplicate}
             isDragging={isDragging}
             selectedIds={selectedIds}
+            onGroup={handleGroup}
+            onUngroup={handleUngroup}
           />
           {/* Right Panel with Tabs using reusable Tabs component */}
           <div className="w-64 flex flex-col border-l bg-white">
@@ -229,7 +306,39 @@ export default function App() {
       {currentPage === "preview" && <GeneratedTestPage items={items} />}
 
       <DragOverlay>
-        {activeId && activeType && <GhostOverlay activeType={activeType} />}
+        {activeId && activeType && (() => {
+          const draggedItem = items.find((item) => item.id === activeId);
+          if (draggedItem && draggedItem.groupId) {
+            // Get all group members
+            const groupMembers = items.filter(
+              (item) => item.groupId === draggedItem.groupId
+            );
+            // Calculate relative positions
+            const baseX = draggedItem.x;
+            const baseY = draggedItem.y;
+            return (
+              <div style={{ position: "relative" }}>
+                {groupMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    style={{
+                      position: "absolute",
+                      left: member.x - baseX,
+                      top: member.y - baseY,
+                      pointerEvents: "none",
+                      opacity: 0.7,
+                    }}
+                  >
+                    <GhostOverlay activeType={member.componentType} />
+                  </div>
+                ))}
+              </div>
+            );
+          } else if (activeType) {
+            return <GhostOverlay activeType={activeType} />;
+          }
+          return null;
+        })()}
       </DragOverlay>
     </DndContext>
   );

@@ -19,6 +19,8 @@ type Props = {
   onDuplicate: (id: string) => void;
   isDragging: boolean;
   selectedIds: string[];
+  onGroup: () => void;
+  onUngroup: () => void;
 };
 
 export default function Canvas({
@@ -28,6 +30,8 @@ export default function Canvas({
   onDuplicate,
   isDragging,
   selectedIds,
+  onGroup,
+  onUngroup,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: "canvas" });
   const [contextMenu, setContextMenu] = useState<{
@@ -49,6 +53,7 @@ export default function Canvas({
   const [panZoomState, setPanZoomState] = useState({ scale: 1, translateX: 0, translateY: 0 });
 
   const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // Only left-click
     if (e.currentTarget === e.target) {
       onSelect("", e);
     }
@@ -58,7 +63,7 @@ export default function Canvas({
   const handleItemContextMenu = (e: MouseEvent, id: string) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, id });
-    onSelect(id, e);
+    // Do NOT call onSelect here; right-click should not change selection
   };
 
   const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -134,6 +139,7 @@ export default function Canvas({
               item={item}
               onSelect={onSelect}
               isSelected={selectedIds.includes(item.id)}
+              groupId={item.groupId}
               onContextMenu={handleItemContextMenu}
               currentScale={currentScale}
             />
@@ -159,7 +165,15 @@ export default function Canvas({
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          items={getDefaultMenuItems(contextMenu.id, onDelete, onDuplicate)}
+          items={getDefaultMenuItems(
+            contextMenu.id,
+            onDelete,
+            onDuplicate,
+            selectedIds,
+            items,
+            onGroup,
+            onUngroup
+          )}
           onClose={() => setContextMenu(null)}
         />
       )}
