@@ -1,6 +1,6 @@
 // src/plugins/ButtonPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { addPx, generateStyleString } from "../utils/styleHelpers";
@@ -46,16 +46,24 @@ const generateButtonMarkup = (item: DroppedItem): string => {
 const buttonProperties: PropertyField[] = [
   { label: "Label", property: "label", type: "text", defaultValue: "Button" },
   { label: "Text Color", property: "textColor", type: "color", defaultValue: "#ffffff" },
-  { label: "Border Radius", property: "borderRadius", type: "number", defaultValue: 4 },
-  { label: "Font Size", property: "fontSize", type: "number", defaultValue: 14 },
-  { label: "Width", property: "width", type: "number", defaultValue: 120 },
-  { label: "Height", property: "height", type: "number", defaultValue: 40 },
+  { label: "Disabled", property: "disabled", type: "boolean", defaultValue: false },
+  { label: "Font Size", property: "fontSize", type: "number", defaultValue: 16 },
+  { label: "Font Weight", property: "fontWeight", type: "text", defaultValue: "bold" },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: false },
+];
+
+// Merge with commonCssProperties, avoiding duplicates
+const mergedButtonProperties: PropertyField[] = [
+  ...buttonProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !buttonProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const ButtonPlugin: ComponentPlugin = {
   type: "button",
   name: "Button",
-  properties: buttonProperties,
+  properties: mergedButtonProperties,
   Render: ButtonRender,
   generateMarkup: generateButtonMarkup,
 };

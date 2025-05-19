@@ -1,6 +1,6 @@
 // src/plugins/DivPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { generateStyleString } from "../utils/styleHelpers";
@@ -38,15 +38,22 @@ const generateDivMarkup = (item: DroppedItem, childrenMarkup: string = ""): stri
 
 // Define property fields for the Div element.
 const divProperties: PropertyField[] = [
-  { label: "Content", property: "label", type: "text", defaultValue: "Div Content" },
-  { label: "Width", property: "width", type: "number", defaultValue: 300 },
-  { label: "Height", property: "height", type: "number", defaultValue: 200 },
+  { label: "Label", property: "label", type: "text", defaultValue: "Div Content" },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: true },
+];
+
+// Merge with commonCssProperties, avoiding duplicates
+const mergedDivProperties: PropertyField[] = [
+  ...divProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !divProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const DivPlugin: ComponentPlugin = {
   type: "div",
   name: "Div",
-  properties: divProperties,
+  properties: mergedDivProperties,
   Render: DivRender,
   generateMarkup: generateDivMarkup,
 };

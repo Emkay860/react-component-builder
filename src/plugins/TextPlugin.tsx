@@ -1,6 +1,6 @@
 // src/plugins/TextPlugin.tsx
 import React from "react";
-import { PropertyField } from "../config/componentProperties";
+import { PropertyField, commonCssProperties } from "../config/componentProperties";
 import type { DroppedItem } from "../types";
 import { getCommonStyles } from "../utils/commonStylesHelper";
 import { generateStyleString } from "../utils/styleHelpers";
@@ -39,15 +39,23 @@ const generateTextMarkup = (item: DroppedItem, childrenMarkup: string = ""): str
 
 // Define property fields for the Text element.
 const textProperties: PropertyField[] = [
-  { label: "Text", property: "label", type: "text", defaultValue: "Text Element" },
-  { label: "Font Size", property: "fontSize", type: "number", defaultValue: 16 },
+  { label: "Text", property: "label", type: "text", defaultValue: "Text" },
   { label: "Text Color", property: "textColor", type: "color", defaultValue: "#000000" },
+  { label: "Font Weight", property: "fontWeight", type: "text", defaultValue: "normal" },
+  { label: "isContainer", property: "isContainer", type: "boolean", defaultValue: false },
+];
+
+const mergedTextProperties: PropertyField[] = [
+  ...textProperties,
+  ...commonCssProperties.filter(
+    (field: PropertyField) => !textProperties.some((f) => f.property === field.property)
+  ),
 ];
 
 const TextPlugin: ComponentPlugin = {
   type: "text",
   name: "Text",
-  properties: textProperties,
+  properties: mergedTextProperties,
   Render: TextRender,
   generateMarkup: generateTextMarkup,
 };

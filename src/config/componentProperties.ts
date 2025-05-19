@@ -9,7 +9,7 @@ export type PropertyField = {
 };
 
 // Define common CSS properties for all components.
-const commonCssProperties: PropertyField[] = [
+export const commonCssProperties: PropertyField[] = [
   { label: "Margin", property: "margin", type: "text", defaultValue: "0" },
   { label: "Padding", property: "padding", type: "text", defaultValue: "0" },
   { label: "Border Width", property: "borderWidth", type: "number", defaultValue: 0 },
@@ -18,7 +18,10 @@ const commonCssProperties: PropertyField[] = [
   { label: "Box Shadow", property: "boxShadow", type: "text", defaultValue: "none" },
   { label: "Opacity", property: "opacity", type: "number", defaultValue: 1 },
   { label: "Font Family", property: "fontFamily", type: "text", defaultValue: "Arial, sans-serif" },
-  { label: "Background Color", property: "backgroundColor", type: "color", defaultValue: "#000000" },
+  { label: "Background Color", property: "backgroundColor", type: "color", defaultValue: "#ffffff" },
+  { label: "Width", property: "width", type: "number", defaultValue: 200 },
+  { label: "Height", property: "height", type: "number", defaultValue: 100 },
+  { label: "Border Radius", property: "borderRadius", type: "number", defaultValue: 4 },
 ];
 
 /**
@@ -82,33 +85,7 @@ export const componentProperties: Partial<Record<ComponentType, PropertyField[]>
     },
   ]),
   card: mergeWithCommonProperties([
-    {
-      label: "Title",
-      property: "label",
-      type: "text",
-      defaultValue: "Card Component",
-    },
-    // { label: "Background Color", property: "bgColor", type: "color", defaultValue: "#ffffff" },
-    {
-      label: "Border Radius",
-      property: "borderRadius",
-      type: "number",
-      defaultValue: 8,
-    },
-    {
-      label: "Font Size",
-      property: "fontSize",
-      type: "number",
-      defaultValue: 16,
-    },
-    { label: "Width", property: "width", type: "number", defaultValue: 300 },
-    { label: "Height", property: "height", type: "number", defaultValue: 200 },
-    {
-      label: "Container",
-      property: "isContainer",
-      type: "boolean",
-      defaultValue: false,
-    },
+   
   ]),
   input: mergeWithCommonProperties([
     {
