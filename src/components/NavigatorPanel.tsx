@@ -9,12 +9,24 @@ interface NavigatorPanelProps {
   selectedIds: string[];
 }
 
-// Helper to build a tree structure with group nodes
+// Helper to build a tree structure with group nodes and parent/child relationships
 function buildTreeWithGroups(items: DroppedItem[]) {
-  // 1. Find all unique groupIds
-  const groupMap: Record<string, { id: string; alias?: string; children: DroppedItem[] }> = {};
-  const ungrouped: DroppedItem[] = [];
+  // Build a map of all items
+  const map: Record<string, DroppedItem & { children: any[] }> = {};
   items.forEach(item => {
+    map[item.id] = { ...item, children: [] };
+  });
+
+  // Attach children to their parent (if any)
+  items.forEach(item => {
+    if (item.parentId && map[item.parentId]) {
+      map[item.parentId].children.push(map[item.id]);
+    }
+  });
+
+  // Group items by groupId
+  const groupMap: Record<string, { id: string; alias?: string; children: any[] }> = {};
+  Object.values(map).forEach(item => {
     if (item.groupId) {
       if (!groupMap[item.groupId]) {
         groupMap[item.groupId] = {
@@ -23,13 +35,14 @@ function buildTreeWithGroups(items: DroppedItem[]) {
           children: [],
         };
       }
-      groupMap[item.groupId].children.push(item);
-      // Optionally, sort children by x/y here
-    } else {
-      ungrouped.push(item);
+      // Only add root-level items (no parent in the same group) to the group node
+      if (!item.parentId || map[item.parentId]?.groupId !== item.groupId) {
+        groupMap[item.groupId].children.push(item);
+      }
     }
   });
-  // 2. Build group nodes as virtual nodes
+
+  // Build group nodes as virtual nodes, preserving parent/child structure within the group
   const groupNodes = Object.values(groupMap).map(group => ({
     id: `group-${group.id}`,
     label: group.alias || group.id,
@@ -38,8 +51,15 @@ function buildTreeWithGroups(items: DroppedItem[]) {
     groupAlias: group.alias,
     children: group.children,
   }));
-  // 3. Return group nodes + ungrouped items as roots
-  return [...groupNodes, ...ungrouped.map(item => ({ ...item, children: [] }))];
+
+  // Find ungrouped root nodes (no parent or parent is not in the same group)
+  const ungroupedRoots = Object.values(map).filter(item => {
+    if (item.groupId) return false;
+    return !item.parentId;
+  });
+
+  // Return group nodes and ungrouped roots as top-level nodes
+  return [...groupNodes, ...ungroupedRoots];
 }
 
 const TreeNode: React.FC<{
@@ -112,7 +132,7 @@ const TreeNode: React.FC<{
         )}
       </div>
       {/* Render children only if not collapsed */}
-      {isParent && !isCollapsed && node.children.map((child: any) => (
+      {isParent && (!isGroup || (isGroup && node.children.some((child: any) => child.isContainer))) && !isCollapsed && node.children.map((child: any) => (
         <TreeNode
           key={child.id}
           node={child}
