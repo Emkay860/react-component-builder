@@ -10,13 +10,12 @@ import { pluginRegistry } from "./PluginRegistry";
 // The render component for a basic <div>.
 const DivRender: React.FC<React.PropsWithChildren<{ item: DroppedItem }>> = ({ item, children }) => {
   const style = {
-    width: item.width ? `${item.width}px` : "auto",
-    height: item.height ? `${item.height}px` : "auto",
+    // width: item.width ? `${item.width}px` : "auto",
+    // height: item.height ? `${item.height}px` : "auto",
     ...getCommonStyles(item),
   };
   return (
-    <div style={style}>
-      {item.label !== undefined ? item.label : "Div Content"}
+    <div className="border border-black w-[100px] h-[50px]" style={style}>
       {children}
     </div>
   );
@@ -31,7 +30,6 @@ const generateDivMarkup = (item: DroppedItem, childrenMarkup: string = ""): stri
   };
   const styleString = generateStyleString(style);
   return `<div style={{ ${styleString} }}>
-  ${item.label !== undefined ? item.label : "Div Content"}
   ${childrenMarkup}
 </div>`;
 };
