@@ -2,7 +2,7 @@
 "use client";
 import { useDroppable } from "@dnd-kit/core";
 import { MouseEvent, useRef, useState } from "react";
-import PanZoom, { PanZoomHandle } from "react-easy-panzoom";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { useZoom } from "../context/ZoomContext";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
@@ -42,15 +42,28 @@ export default function Canvas({
 
   const { currentScale, setCurrentScale } = useZoom();
 
-  const panZoomRef = useRef<PanZoomHandle | null>(null);
+  const panZoomRef = useRef<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+    reset: () => void;
+    center: () => void;
+  } | null>(null);
+  const setPanZoomRef = (refObj: any) => {
+    if (refObj) {
+      panZoomRef.current = {
+        zoomIn: refObj.zoomIn,
+        zoomOut: refObj.zoomOut,
+        reset: refObj.resetTransform,
+        center: refObj.centerView,
+      };
+    }
+  };
 
   const [showGrid, setShowGrid] = useState(true);
   const [showRulers, setShowRulers] = useState(true);
   const gridSize = 40; // px
   const canvasWidth = 3000;
   const canvasHeight = 3000;
-
-  const [panZoomState, setPanZoomState] = useState({ scale: 1, translateX: 0, translateY: 0 });
 
   const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
     if (e.button !== 0) return; // Only left-click
@@ -73,21 +86,15 @@ export default function Canvas({
   };
 
   const handleZoomIn = () => {
-    if (panZoomRef.current && panZoomRef.current.zoomIn) {
-      panZoomRef.current.zoomIn();
-    }
+    panZoomRef.current?.zoomIn();
   };
 
   const handleZoomOut = () => {
-    if (panZoomRef.current && panZoomRef.current.zoomOut) {
-      panZoomRef.current.zoomOut();
-    }
+    panZoomRef.current?.zoomOut();
   };
 
   const handleReset = () => {
-    if (panZoomRef.current && panZoomRef.current.reset) {
-      panZoomRef.current.reset();
-    }
+    panZoomRef.current?.reset();
   };
 
   const handleCenterCanvas = () => {
@@ -105,47 +112,58 @@ export default function Canvas({
       style={{ touchAction: "none", overflow: "hidden" }}
     >
       <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
-      <PanZoom
-        ref={panZoomRef}
-        onStateChange={(state) => {
-          setCurrentScale(state.scale);
-          setPanZoomState(state);
-        }}
-        minZoom={0.2}
-        maxZoom={3}
+      <TransformWrapper
+        minScale={0.2}
+        maxScale={3}
+        initialScale={1}
+        wheel={{ step: 0.1, wheelDisabled: false, touchPadDisabled: false }}
+        doubleClick={{ disabled: true }}
+        panning={{ velocityDisabled: false }} // Enable velocity for smooth panning
+        centerOnInit
+        centerZoomedOut // Center canvas when zooming out
+        limitToBounds={false} // Allow free panning/zooming
+        onZoomStop={(ref) => setCurrentScale(ref.state.scale)}
+        onInit={setPanZoomRef}
       >
-        <div
-          onMouseDown={handleInnerMouseDown}
-          style={{
-            position: "relative",
-            width: canvasWidth,
-            height: canvasHeight,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
-          {/* Grid overlay */}
-          <GridBackground
-            show={showGrid}
-            gridSize={gridSize}
-            panZoomState={panZoomState}
-            width={canvasWidth}
-            height={canvasHeight}
-          />
-          {/* Canvas items */}
-          {items.map((item) => (
-            <CanvasItem
-              key={item.id}
-              item={item}
-              onSelect={onSelect}
-              isSelected={selectedIds.includes(item.id)}
-              groupId={item.groupId}
-              onContextMenu={handleItemContextMenu}
-              currentScale={currentScale}
-            />
-          ))}
-        </div>
-      </PanZoom>
+        {(utils) => {
+          const state = utils.instance.transformState;
+          return (
+            <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }} contentStyle={{ width: canvasWidth, height: canvasHeight }}>
+              <div
+                onMouseDown={handleInnerMouseDown}
+                style={{
+                  position: "relative",
+                  width: canvasWidth,
+                  height: canvasHeight,
+                  overflow: "hidden",
+                  background: "#fff",
+                }}
+              >
+                {/* Grid overlay */}
+                <GridBackground
+                  show={showGrid}
+                  gridSize={gridSize}
+                  panZoomState={{ scale: state.scale, translateX: state.positionX, translateY: state.positionY }}
+                  width={canvasWidth}
+                  height={canvasHeight}
+                />
+                {/* Canvas items */}
+                {items.map((item) => (
+                  <CanvasItem
+                    key={item.id}
+                    item={item}
+                    onSelect={onSelect}
+                    isSelected={selectedIds.includes(item.id)}
+                    groupId={item.groupId}
+                    onContextMenu={handleItemContextMenu}
+                    currentScale={currentScale}
+                  />
+                ))}
+              </div>
+            </TransformComponent>
+          );
+        }}
+      </TransformWrapper>
       <CanvasControls
         showGrid={showGrid}
         setShowGrid={setShowGrid}
