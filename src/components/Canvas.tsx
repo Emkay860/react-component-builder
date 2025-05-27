@@ -66,7 +66,7 @@ export default function Canvas({
         isOver ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-gray-50"
       }`}
       onClick={handleCanvasClick}
-      style={{ touchAction: "none", overflow: "hidden" }}
+      style={{ touchAction: "none", overflow: "hidden", background: "transparent", }}
     >
       <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
       <TransformWrapper
