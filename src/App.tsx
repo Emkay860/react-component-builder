@@ -175,9 +175,6 @@ export default function App() {
     setItems((prev) => [...prev, newItem]);
   };
 
-  // In your ZoomContext this may be used to initialize state,
-  // or you can update it through your existing ZoomContext provider.
-  // For example, on navigating back to the editor:
   const handleEditorClick = () => {
     setCurrentPage("editor");
   };

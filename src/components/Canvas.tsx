@@ -2,7 +2,6 @@
 "use client";
 import React, { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
-// import { useZoom } from "../context/ZoomContext";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
