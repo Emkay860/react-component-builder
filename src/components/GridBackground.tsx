@@ -14,9 +14,11 @@ const GridBackground: React.FC<GridBackgroundProps> = ({ show, gridSize, panZoom
   const scale = panZoomState.scale || 1;
   const offsetX = panZoomState.translateX || 0;
   const offsetY = panZoomState.translateY || 0;
-  const size = gridSize * scale;
-  const bgPosX = ((offsetX % size) + size) % size;
-  const bgPosY = ((offsetY % size) + size) % size;
+  // Instead of scaling the grid size, keep it constant in screen space
+  const size = gridSize; // Do not multiply by scale
+  const lineThickness = Math.max(1, Math.round(1 / scale)); // Always 1px
+  const bgPosX = ((offsetX / scale) % size + size) % size;
+  const bgPosY = ((offsetY / scale) % size + size) % size;
   return (
     <div
       style={{
@@ -28,8 +30,8 @@ const GridBackground: React.FC<GridBackgroundProps> = ({ show, gridSize, panZoom
         pointerEvents: "none",
         zIndex: 0,
         backgroundImage:
-          `repeating-linear-gradient(to right, #e0e0e0 0px, #e0e0e0 1px, transparent 1px, transparent ${size}px),` +
-          `repeating-linear-gradient(to bottom, #e0e0e0 0px, #e0e0e0 1px, transparent 1px, transparent ${size}px)`,
+          `repeating-linear-gradient(to right, #e0e0e0 0px, #e0e0e0 ${lineThickness}px, transparent ${lineThickness}px, transparent ${size}px),` +
+          `repeating-linear-gradient(to bottom, #e0e0e0 0px, #e0e0e0 ${lineThickness}px, transparent ${lineThickness}px, transparent ${size}px)`,
         backgroundSize: `${size}px ${size}px`,
         backgroundPosition: `${bgPosX}px ${bgPosY}px`,
       }}
