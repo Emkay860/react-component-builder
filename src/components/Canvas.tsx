@@ -10,6 +10,7 @@ import GridBackground from "./GridBackground";
 import Rulers from "./Rulers";
 import CanvasControls from "./CanvasControls";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useCanvasPanZoom } from "../hooks/useCanvasPanZoom";
 
 type Props = {
   items: DroppedItem[];
@@ -87,52 +88,22 @@ export default function Canvas({
           }
         }}
       >
-        {({ zoomIn, zoomOut, resetTransform, centerView, setTransform, ...rest }) => {
-          // Get the visible container size
-          const container = document.getElementById("canvas-root");
-          const containerRect = container ? container.getBoundingClientRect() : { width: 1200, height: 800 };
-          // Center of the visible area (container)
-          const viewportCenterX = containerRect.width / 2;
-          const viewportCenterY = containerRect.height / 2;
-          // Center of the canvas
-          const canvasCenterX = canvasWidth / 2;
-          const canvasCenterY = canvasHeight / 2;
-
-          // Helper to get the center of the selected element (or canvas center if none)
-          let targetCenterX = canvasCenterX;
-          let targetCenterY = canvasCenterY;
-          if (selectedIds.length > 0) {
-            const selected = items.find(i => i.id === selectedIds[0]);
-            if (selected) {
-              const width = selected.width || 100;
-              const height = selected.height || 100;
-              targetCenterX = (selected.x || 0) + width / 2;
-              targetCenterY = (selected.y || 0) + height / 2;
-            }
-          }
-
-          // Center the viewport on the selected element (or canvas center)
-          const focusOnTarget = (scaleOverride?: number, animTime = 300) => {
-            const scale = scaleOverride ?? rest.instance.transformState.scale;
-            const positionX = viewportCenterX - targetCenterX * scale;
-            const positionY = viewportCenterY - targetCenterY * scale;
-            setTransform(positionX, positionY, scale, animTime, "easeInOutQuad");
+        {({ setTransform, ...rest }) => {
+          // Use the custom hook for pan/zoom logic
+          const getViewportRect = () => {
+            const container = document.getElementById("canvas-root");
+            return container ? container.getBoundingClientRect() : { width: 1200, height: 800 };
           };
-
-          const handleCenter = () => focusOnTarget();
-
-          // Zoom in/out, then focus on the selected element
-          const handleZoomIn = () => {
-            const newScale = Math.min(rest.instance.transformState.scale + 0.2, 4);
-            focusOnTarget(newScale, 200);
-          };
-          const handleZoomOut = () => {
-            const newScale = Math.max(rest.instance.transformState.scale - 0.2, 0.2);
-            focusOnTarget(newScale, 200);
-          };
-          // Reset: zoom to 1 and focus on selected element (or canvas center)
-          const handleReset = () => focusOnTarget(1, 300);
-
+          const getScale = () => rest.instance.transformState.scale;
+          const panZoom = useCanvasPanZoom({
+            items,
+            selectedIds,
+            canvasWidth,
+            canvasHeight,
+            getViewportRect,
+            setTransform,
+            getScale,
+          });
           const { scale, positionX, positionY } = rest.instance.transformState;
           return (
             <>
@@ -171,10 +142,10 @@ export default function Canvas({
                 setShowGrid={setShowGrid}
                 showRulers={showRulers}
                 setShowRulers={setShowRulers}
-                onZoomIn={handleZoomIn}
-                onZoomOut={handleZoomOut}
-                onReset={handleReset}
-                onCenter={handleCenter}
+                onZoomIn={panZoom.handleZoomIn}
+                onZoomOut={panZoom.handleZoomOut}
+                onReset={panZoom.handleReset}
+                onCenter={panZoom.handleCenter}
               />
             </>
           );
