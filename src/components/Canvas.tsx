@@ -2,7 +2,7 @@
 "use client";
 import { useDroppable } from "@dnd-kit/core";
 import { MouseEvent, useState } from "react";
-import { useZoom } from "../context/ZoomContext";
+// import { useZoom } from "../context/ZoomContext";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
@@ -56,7 +56,7 @@ export default function Canvas({
     setContextMenu({ x: e.clientX, y: e.clientY, id });
   };
 
-  const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {};
+  // const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {};
 
   return (
     <div
@@ -70,7 +70,7 @@ export default function Canvas({
     >
       <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
       <div
-        onMouseDown={handleInnerMouseDown}
+        // onMouseDown={handleInnerMouseDown}
         style={{
           position: "relative",
           width: canvasWidth,
