@@ -32,6 +32,7 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState("editor");
   const [isDragging, setIsDragging] = useState(false);
+  const [panZoom, setPanZoom] = useState({ scale: 1, positionX: 0, positionY: 0 });
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
@@ -74,16 +75,18 @@ export default function App() {
         : undefined;
 
     if (isExistingItem) {
-      const finalX = startCoordinates.x + delta.x;
-      const finalY = startCoordinates.y + delta.y;
+      // Only use delta divided by scale for existing items (no pan offset)
+      const scale = panZoom.scale;
+      const finalX = startCoordinates.x + delta.x / scale;
+      const finalY = startCoordinates.y + delta.y / scale;
       // Find the dragged item
       const draggedItem = items.find((item) => item.id === String(active.id));
       if (draggedItem && draggedItem.groupId) {
+        const dx = finalX - draggedItem.x;
+        const dy = finalY - draggedItem.y;
         setItems((prev) =>
           prev.map((item) => {
             if (item.groupId === draggedItem.groupId) {
-              const dx = finalX - draggedItem.x;
-              const dy = finalY - draggedItem.y;
               const newParentId =
                 item.id === draggedItem.id && parentId !== undefined
                   ? parentId
@@ -110,8 +113,10 @@ export default function App() {
         );
       }
     } else if (active.data.current?.componentType) {
-      const finalX = startCoordinates.x + delta.x - canvasRect.left;
-      const finalY = startCoordinates.y + delta.y - canvasRect.top;
+      // For new items, convert drop point from screen to canvas coordinates (apply pan and scale)
+      const scale = panZoom.scale;
+      const finalX = (startCoordinates.x + delta.x - canvasRect.left - panZoom.positionX) / scale;
+      const finalY = (startCoordinates.y + delta.y - canvasRect.top - panZoom.positionY) / scale;
       const newItem: DroppedItem = {
         id: `canvas-${active.data.current.componentType}-${Date.now()}`,
         x: finalX,
@@ -224,6 +229,10 @@ export default function App() {
     }
   };
 
+  const handlePanZoomChange = (state: { scale: number; positionX: number; positionY: number }) => {
+    setPanZoom(state);
+  };
+
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex p-4 bg-gray-100 space-x-4">
@@ -273,6 +282,7 @@ export default function App() {
             selectedIds={selectedIds}
             onGroup={handleGroup}
             onUngroup={handleUngroup}
+            onPanZoomChange={handlePanZoomChange}
           />
           {/* Right Panel with Tabs using reusable Tabs component */}
           <div className="w-64 flex flex-col border-l bg-white">
