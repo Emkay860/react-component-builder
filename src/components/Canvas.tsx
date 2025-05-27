@@ -10,6 +10,7 @@ import GridBackground from "./GridBackground";
 import Rulers from "./Rulers";
 import CanvasControls from "./CanvasControls";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useCanvasPanZoom } from "../hooks/useCanvasPanZoom";
 
 type Props = {
   items: DroppedItem[];
@@ -76,6 +77,7 @@ export default function Canvas({
         wheel={{ step: 0.1 }}
         panning={{ disabled: false, allowLeftClickPan: false }}
         limitToBounds={false}
+        alignmentAnimation={{ sizeX: canvasWidth, sizeY: canvasHeight }}
         onTransformed={(_, state) => {
           if (onPanZoomChange) {
             onPanZoomChange({
@@ -86,7 +88,22 @@ export default function Canvas({
           }
         }}
       >
-        {({ zoomIn, zoomOut, resetTransform, centerView, ...rest }) => {
+        {({ setTransform, ...rest }) => {
+          // Use the custom hook for pan/zoom logic
+          const getViewportRect = () => {
+            const container = document.getElementById("canvas-root");
+            return container ? container.getBoundingClientRect() : { width: 1200, height: 800 };
+          };
+          const getScale = () => rest.instance.transformState.scale;
+          const panZoom = useCanvasPanZoom({
+            items,
+            selectedIds,
+            canvasWidth,
+            canvasHeight,
+            getViewportRect,
+            setTransform,
+            getScale,
+          });
           const { scale, positionX, positionY } = rest.instance.transformState;
           return (
             <>
@@ -125,10 +142,10 @@ export default function Canvas({
                 setShowGrid={setShowGrid}
                 showRulers={showRulers}
                 setShowRulers={setShowRulers}
-                onZoomIn={zoomIn}
-                onZoomOut={zoomOut}
-                onReset={resetTransform}
-                onCenter={centerView}
+                onZoomIn={panZoom.handleZoomIn}
+                onZoomOut={panZoom.handleZoomOut}
+                onReset={panZoom.handleReset}
+                onCenter={panZoom.handleCenter}
               />
             </>
           );
