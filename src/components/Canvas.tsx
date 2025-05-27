@@ -56,8 +56,6 @@ export default function Canvas({
     setContextMenu({ x: e.clientX, y: e.clientY, id });
   };
 
-  // const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {};
-
   return (
     <div
       ref={setNodeRef}
@@ -70,7 +68,6 @@ export default function Canvas({
     >
       <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
       <div
-        // onMouseDown={handleInnerMouseDown}
         style={{
           position: "relative",
           width: canvasWidth,
