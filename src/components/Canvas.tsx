@@ -1,9 +1,8 @@
 // src/components/Canvas.tsx
 "use client";
 import { useDroppable } from "@dnd-kit/core";
-import { MouseEvent, useRef, useState } from "react";
-import PanZoom, { PanZoomHandle } from "react-easy-panzoom";
-import { useZoom } from "../context/ZoomContext";
+import { MouseEvent, useState } from "react";
+// import { useZoom } from "../context/ZoomContext";
 import { DroppedItem } from "../types";
 import CanvasItem from "./CanvasItem";
 import ContextMenu from "./menus/ContextMenu";
@@ -28,7 +27,6 @@ export default function Canvas({
   onSelect,
   onDelete,
   onDuplicate,
-  isDragging,
   selectedIds,
   onGroup,
   onUngroup,
@@ -39,21 +37,14 @@ export default function Canvas({
     y: number;
     id: string;
   } | null>(null);
-
-  const { currentScale, setCurrentScale } = useZoom();
-
-  const panZoomRef = useRef<PanZoomHandle | null>(null);
-
   const [showGrid, setShowGrid] = useState(true);
   const [showRulers, setShowRulers] = useState(true);
   const gridSize = 40; // px
   const canvasWidth = 3000;
   const canvasHeight = 3000;
 
-  const [panZoomState, setPanZoomState] = useState({ scale: 1, translateX: 0, translateY: 0 });
-
   const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return; // Only left-click
+    if (e.button !== 0) return;
     if (e.currentTarget === e.target) {
       onSelect("", e);
     }
@@ -63,36 +54,9 @@ export default function Canvas({
   const handleItemContextMenu = (e: MouseEvent, id: string) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY, id });
-    // Do NOT call onSelect here; right-click should not change selection
   };
 
-  const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (isDragging) {
-      e.stopPropagation();
-    }
-  };
-
-  const handleZoomIn = () => {
-    if (panZoomRef.current && panZoomRef.current.zoomIn) {
-      panZoomRef.current.zoomIn();
-    }
-  };
-
-  const handleZoomOut = () => {
-    if (panZoomRef.current && panZoomRef.current.zoomOut) {
-      panZoomRef.current.zoomOut();
-    }
-  };
-
-  const handleReset = () => {
-    if (panZoomRef.current && panZoomRef.current.reset) {
-      panZoomRef.current.reset();
-    }
-  };
-
-  const handleCenterCanvas = () => {
-    handleReset();
-  };
+  // const handleInnerMouseDown = (e: MouseEvent<HTMLDivElement>) => {};
 
   return (
     <div
@@ -105,56 +69,44 @@ export default function Canvas({
       style={{ touchAction: "none", overflow: "hidden" }}
     >
       <Rulers show={showRulers} gridSize={gridSize} width={canvasWidth} height={canvasHeight} />
-      <PanZoom
-        ref={panZoomRef}
-        onStateChange={(state) => {
-          setCurrentScale(state.scale);
-          setPanZoomState(state);
+      <div
+        // onMouseDown={handleInnerMouseDown}
+        style={{
+          position: "relative",
+          width: canvasWidth,
+          height: canvasHeight,
+          overflow: "hidden",
+          background: "#fff",
         }}
-        minZoom={0.2}
-        maxZoom={3}
       >
-        <div
-          onMouseDown={handleInnerMouseDown}
-          style={{
-            position: "relative",
-            width: canvasWidth,
-            height: canvasHeight,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
-          {/* Grid overlay */}
-          <GridBackground
-            show={showGrid}
-            gridSize={gridSize}
-            panZoomState={panZoomState}
-            width={canvasWidth}
-            height={canvasHeight}
+        <GridBackground
+          show={showGrid}
+          gridSize={gridSize}
+          panZoomState={{ scale: 1, translateX: 0, translateY: 0 }}
+          width={canvasWidth}
+          height={canvasHeight}
+        />
+        {items.map((item) => (
+          <CanvasItem
+            key={item.id}
+            item={item}
+            onSelect={onSelect}
+            isSelected={selectedIds.includes(item.id)}
+            groupId={item.groupId}
+            onContextMenu={handleItemContextMenu}
+            currentScale={1}
           />
-          {/* Canvas items */}
-          {items.map((item) => (
-            <CanvasItem
-              key={item.id}
-              item={item}
-              onSelect={onSelect}
-              isSelected={selectedIds.includes(item.id)}
-              groupId={item.groupId}
-              onContextMenu={handleItemContextMenu}
-              currentScale={currentScale}
-            />
-          ))}
-        </div>
-      </PanZoom>
+        ))}
+      </div>
       <CanvasControls
         showGrid={showGrid}
         setShowGrid={setShowGrid}
         showRulers={showRulers}
         setShowRulers={setShowRulers}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onReset={handleReset}
-        onCenter={handleCenterCanvas}
+        onZoomIn={() => {}}
+        onZoomOut={() => {}}
+        onReset={() => {}}
+        onCenter={() => {}}
       />
       {items.length === 0 && (
         <p className="absolute inset-0 flex items-center justify-center text-gray-500">
