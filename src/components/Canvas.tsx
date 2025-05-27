@@ -42,8 +42,8 @@ export default function Canvas({
   const [showGrid, setShowGrid] = useState(true);
   const [showRulers, setShowRulers] = useState(true);
   const gridSize = 40; // px
-  const canvasWidth = 3000;
-  const canvasHeight = 3000;
+  const canvasWidth = 30000;
+  const canvasHeight = 30000;
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
@@ -74,9 +74,8 @@ export default function Canvas({
         maxScale={4}
         initialScale={1}
         wheel={{ step: 0.1 }}
-        centerOnInit
-        centerZoomedOut
         panning={{ disabled: false, allowLeftClickPan: false }}
+        limitToBounds={false}
         onTransformed={(_, state) => {
           if (onPanZoomChange) {
             onPanZoomChange({
