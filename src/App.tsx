@@ -19,7 +19,6 @@ import { Tabs, TabList, Tab, TabPanel } from "./components/Tabs";
 import { v4 as uuidv4 } from "uuid";
 
 // Import the consolidated plugins so their registration code runs.
-import { useZoom } from "./context/ZoomContext";
 import "./plugins";
 
 export default function App() {
@@ -33,8 +32,7 @@ export default function App() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState("editor");
   const [isDragging, setIsDragging] = useState(false);
-  // State to store the current zoom scale (brought up from Canvas)
-  const { currentScale, setCurrentScale } = useZoom();
+  const [panZoom, setPanZoom] = useState({ scale: 1, positionX: 0, positionY: 0 });
 
   const handleDragStart = (event: DragStartEvent) => {
     const mouseEvent = event.activatorEvent as MouseEvent;
@@ -77,20 +75,18 @@ export default function App() {
         : undefined;
 
     if (isExistingItem) {
-      // Adjust the delta by dividing to currentScale.
-      const finalX = startCoordinates.x + delta.x / currentScale;
-      const finalY = startCoordinates.y + delta.y / currentScale;
+      // Only use delta divided by scale for existing items (no pan offset)
+      const scale = panZoom.scale;
+      const finalX = startCoordinates.x + delta.x / scale;
+      const finalY = startCoordinates.y + delta.y / scale;
       // Find the dragged item
       const draggedItem = items.find((item) => item.id === String(active.id));
       if (draggedItem && draggedItem.groupId) {
-        // Move all group members by the same delta
+        const dx = finalX - draggedItem.x;
+        const dy = finalY - draggedItem.y;
         setItems((prev) =>
           prev.map((item) => {
             if (item.groupId === draggedItem.groupId) {
-              // Move by the same delta as the dragged item
-              const dx = finalX - draggedItem.x;
-              const dy = finalY - draggedItem.y;
-              // Only update parentId for the dragged item
               const newParentId =
                 item.id === draggedItem.id && parentId !== undefined
                   ? parentId
@@ -109,7 +105,6 @@ export default function App() {
         setItems((prev) =>
           prev.map((item) => {
             if (item.id === String(active.id)) {
-              // Only update parentId if it actually changed (prevents accidental unparenting on click)
               const newParentId = parentId !== undefined ? parentId : item.parentId;
               return { ...item, x: finalX, y: finalY, parentId: newParentId };
             }
@@ -118,10 +113,10 @@ export default function App() {
         );
       }
     } else if (active.data.current?.componentType) {
-      const finalX =
-        startCoordinates.x + delta.x / currentScale - canvasRect.left;
-      const finalY =
-        startCoordinates.y + delta.y / currentScale - canvasRect.top;
+      // For new items, convert drop point from screen to canvas coordinates (apply pan and scale)
+      const scale = panZoom.scale;
+      const finalX = (startCoordinates.x + delta.x - canvasRect.left - panZoom.positionX) / scale;
+      const finalY = (startCoordinates.y + delta.y - canvasRect.top - panZoom.positionY) / scale;
       const newItem: DroppedItem = {
         id: `canvas-${active.data.current.componentType}-${Date.now()}`,
         x: finalX,
@@ -136,7 +131,6 @@ export default function App() {
               : "Text Element"
             : undefined,
         parentId: parentId,
-        // Ensure isContainer is always explicitly set to false for new items unless otherwise specified
         isContainer: false,
       };
       setItems((prev) => [...prev, newItem]);
@@ -185,7 +179,6 @@ export default function App() {
   // or you can update it through your existing ZoomContext provider.
   // For example, on navigating back to the editor:
   const handleEditorClick = () => {
-    setCurrentScale(1); // Reset currentScale before changing view.
     setCurrentPage("editor");
   };
 
@@ -234,6 +227,10 @@ export default function App() {
     } else {
       setSelectedIds(id ? [id] : []);
     }
+  };
+
+  const handlePanZoomChange = (state: { scale: number; positionX: number; positionY: number }) => {
+    setPanZoom(state);
   };
 
   return (
@@ -285,6 +282,7 @@ export default function App() {
             selectedIds={selectedIds}
             onGroup={handleGroup}
             onUngroup={handleUngroup}
+            onPanZoomChange={handlePanZoomChange}
           />
           {/* Right Panel with Tabs using reusable Tabs component */}
           <div className="w-64 flex flex-col border-l bg-white">
